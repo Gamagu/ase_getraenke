@@ -1,18 +1,22 @@
 package com.example;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.example.entities.Bestellung;
 import com.example.entities.Kunde;
-import com.example.entities.Pfandwert;
+import com.example.entities.Lieferung;
 import com.example.entities.Produkt;
 import com.example.entities.Zahlungsvorgang;
 import com.example.repositories.GetraenkeRepository;
 import com.example.util.Pair;
+import com.example.util.Triple;
 import com.example.valueobjects.BestellungProdukt;
+import com.example.valueobjects.Pfandwert;
 import com.example.valueobjects.Preis;
 
 class GetraenkeUsecases {
@@ -29,23 +33,29 @@ class GetraenkeUsecases {
           * @throws Exception 
           */
          public void acceptLieferung(Iterable<Pair<Produkt, Integer>> produkte, LocalDateTime date) throws Exception{
-        throw new Exception("Not Implemented");
+            int lieferId = Lieferung.counter.incrementAndGet();
+            for(Pair<Produkt,Integer> prod : produkte){
+                repo.addLieferung(new Lieferung(prod.key(), prod.value(), lieferId));
+            }
     }
 
     // soll npublic euen Pfandwert anlegen
      public void addPfandWert(String beschreibung, double wert) throws Exception{
-        throw new Exception("Not Implemented");
+        Pfandwert pfandwert = new Pfandwert(wert, beschreibung);
+        repo.addPfandwert(pfandwert);
     }
 
     // neuen public Preis für Pfand setzen
-     public void setPfandwert(Pfandwert pfandwert) throws Exception{
-        throw new Exception("Not Implemented");
+     public Pfandwert setPfandwert(Pfandwert pfandwert, double newValue) throws Exception{
+        Pfandwert newPfandwert = new Pfandwert(newValue, pfandwert.beschreibung);
+        repo.addPfandwert(newPfandwert);
+        return newPfandwert;
     }
 
     // setzt public Pfandwert für ein Produkt. UUIDs sind die IDs der jeweiligen
     // Produkte und der value des pairs, ist die anzahl des Pfandwertes.
-     public void setPfandwertProdukt(Produkt produkt, Iterable<Pair<Pfandwert, Integer>> pfandliste) throws Exception{
-        throw new Exception("Not Implemented");
+     public void setPfandwertProdukt(Produkt produkt, Iterable<Pfandwert> pfandliste) throws Exception{
+        produkt.setPfandAssignment(pfandliste, repo);
     }
 
     // for thpublic e next functions, the of pair is the identifier and the second
@@ -92,21 +102,35 @@ class GetraenkeUsecases {
                 .getProdukte().filter(p -> p.getProdukt().equals(product)).mapToInt(p -> p.getMenge()).sum()).sum();
     }
 
-     public void addProdukt(String Name, String beschreibung, String kategorie, double preis) throws Exception{
-        throw new Exception("Not Implemented");
+     public void addProdukt(String name, String beschreibung, String kategorie, double preis) throws Exception{
+         Produkt produkt = new Produkt(name, beschreibung, kategorie);
+        Preis p = new Preis(preis, produkt);
+        produkt.setPreis(p, repo);
     }
 
      public Produkt getProduct(UUID produktId) throws Exception{
-        throw new Exception("Not Implemented");
+        return repo.getProdukt(produktId);
     }
 
-     public Bestellung addBestellung(Kunde kunde, Iterable<Pair<Produkt, Integer>> produkte) throws Exception{
-        throw new Exception("Not Implemented");
+     public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
+        ArrayList<BestellungProdukt> prodList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        for(Triple<Produkt,Integer, Double> prod : produkte){
+            Preis preis = repo.getPreis(prod.first(), prod.value(), now).orElse(null);
+            if(preis == null){
+                preis = new Preis(prod.number(), prod.first());
+                repo.addPrice(preis);
+            }
+            prodList.add(new BestellungProdukt(prod.first(), preis, prod.value()));
+        }
+        return new Bestellung(kunde, now, prodList);
     }
 
      public Zahlungsvorgang addZahlungsvorgang(Kunde kunde, String zahlungsweg, double betrag,
             LocalDateTime date) throws Exception{
-                throw new Exception("Not Implemented");
+                Zahlungsvorgang z = new Zahlungsvorgang(kunde, zahlungsweg,betrag, date);
+                repo.addZahlungsVorgang(z);
+                return z;
             }
 
 }
