@@ -2,7 +2,9 @@ package com.example.entities;
 
 import java.util.UUID;
 
-public class Kunde {
+import com.example.util.EntityWrapper;
+
+public class Kunde extends EntityWrapper<Kunde>{
     UUID id;
     String name;
     String nachname;
