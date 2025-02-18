@@ -2,17 +2,21 @@ package com.example;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.example.entities.Bestellung;
 import com.example.entities.Kunde;
 import com.example.entities.Lieferung;
-import com.example.entities.Pfandwert;
 import com.example.entities.Produkt;
 import com.example.entities.Zahlungsvorgang;
 import com.example.repositories.GetraenkeRepository;
+import com.example.valueobjects.Pfandwert;
 import com.example.valueobjects.Preis;
+import com.example.valueobjects.Preis.Priced;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 public class GetraenkeRepositoryImpl extends GetraenkeRepository {
@@ -133,4 +137,10 @@ public class GetraenkeRepositoryImpl extends GetraenkeRepository {
             throw new NoSuchElementException("No matching Priced Object in here");
         }
     }
+    
+
+    public Optional<Preis> getPreis(Priced obj, double price, LocalDateTime date){
+        Preis p = new Preis(price, obj, date);
+        return preise.stream().filter(preis -> preis.equals(p)).findFirst();
+     }
 }
