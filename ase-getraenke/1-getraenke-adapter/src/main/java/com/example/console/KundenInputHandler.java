@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.example.kundeusecases;
+import com.example.entities.Bestellung;
 import com.example.entities.Kunde;
 
 public class KundenInputHandler {
@@ -39,12 +43,18 @@ public class KundenInputHandler {
         String eMail = readStringInputWithPrompt("E-Mail: ");
         if(acceptInput()){
             kundeUseCases.createKunde(name, nachname, eMail);
-            System.out.println("Kunde was create succesfully");
+            System.out.println("Kunde was created succesfully");
         }
     }
 
     private void handleGetAllKundenInput() {
-        Iterable<Kunde> kundenList = this.kundeUseCases.getAllKunden();
+        Optional<Iterable<Kunde>> kundenOptVec = this.kundeUseCases.getAllKunden();
+        if(kundenOptVec.isEmpty()){
+            errorNoKunden();
+            return;
+        }
+        List<Kunde> kundenList = StreamSupport.stream(kundenOptVec.get().spliterator(), false)
+                                 .collect(Collectors.toList());
         int count = 1;
         for(Kunde kunde : kundenList){
             printKundeWithNumber(kunde,count);
@@ -53,24 +63,12 @@ public class KundenInputHandler {
     }
 
     private void handleSetNameInput() {
-        Iterable<Kunde> kundenIter = this.kundeUseCases.getAllKunden();
-        List<Kunde> kundenList = new ArrayList<Kunde>();
-        kundenList.addAll(kundenList);
-        int count = 1;
-        for(Kunde kunde : kundenIter) {
-            printKundeWithNumber(kunde, count);
-            kundenList.add(kunde);
-            
+        Optional<Kunde> kundeOptional = pickOneUserFromAllUsers();
+        if(!acceptInput()){
+            errorNoKunden();
+            return;
         }
-        int indexCustomer = 0;
-        while (true) {
-            indexCustomer = readIntInputWithPrompt("Which Customername do you want to change?");
-            if(indexCustomer < count && indexCustomer > 0){
-                break;
-            }
-            System.out.println("Something went wrong the "+ indexCustomer +  " is not in the list");
-        }
-        Kunde kunde = kundenList.get(indexCustomer-1);
+        Kunde kunde = kundeOptional.get();
         System.out.println(kunde.toString());
         String newFirstName = readStringInputWithPrompt("Please enter a new first Name: ");
         String newSecondName = readStringInputWithPrompt("Please enter a new first Name: ");
@@ -79,20 +77,65 @@ public class KundenInputHandler {
     }
 
     private void handleGetKundeInput() {
-        //TODO Implemente
+        while(true){
+            String eMail = readStringInputWithPrompt("Enter a EMail: ");
+            Optional<Kunde> kunde = this.kundeUseCases.getKunde(eMail);
+            if(kunde.isPresent()){
+                break;
+            }
+            System.out.println("No Customer with the Mail: " + eMail + " was found.");
+        }
     }
 
     private void handleGetKundenBalanceInput() {
-        //TODO Implemente
+        Optional<Kunde> kundeOptional = pickOneUserFromAllUsers();
+        if(kundeOptional.isEmpty()){
+            errorNoKunden();
+            return;
+        }
+        Kunde kunde = kundeOptional.get();
+        double dBalance = this.kundeUseCases.getKundenBalance(kunde);
+        System.out.println( kunde.toString()+ "\n"+ dBalance);
     }
 
     private void handleGetAllBestellungenInput() {
-        //TODO Implemente
+        Optional<Kunde> kundeOptional = pickOneUserFromAllUsers();
+        if(kundeOptional.isEmpty()){
+            errorNoKunden();
+            return;
+        }
+        Kunde kunde = kundeOptional.get();
+        Iterable<Bestellung> bestellungsVec = this.kundeUseCases.getAllBestellungen(kunde);
+        for(Bestellung bestellung : bestellungsVec){
+            System.out.println(bestellung.toString());
+        }
     }
-    
-    
     public Map<String, Runnable> getKundeCommandMap() {
         return kundeCommandMap;
+    }
+
+    private Optional<Kunde> pickOneUserFromAllUsers(){
+        Optional<Iterable<Kunde>> kundenOptVec = this.kundeUseCases.getAllKunden();
+        if(kundenOptVec.isEmpty()){
+            return Optional.empty();
+        }
+        List<Kunde> kundenList = new ArrayList<Kunde>();
+        kundenList = StreamSupport.stream(kundenOptVec.get().spliterator(), false).collect(Collectors.toList());
+        int count = 1;
+        for(Kunde kunde : kundenList) {
+            printKundeWithNumber(kunde, count);
+            kundenList.add(kunde);
+            
+        }
+        int indexCustomer = 0;
+        while (true) {
+            indexCustomer = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexCustomer < count && indexCustomer > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexCustomer +  " is not in the list");
+        }
+        return Optional.of(kundenList.get(indexCustomer-1));
     }
 
     private String readStringInputWithPrompt(String prompt){
@@ -113,19 +156,6 @@ public class KundenInputHandler {
         }
     }
 
-    private Float readFloatInputWithPrompt(String prompt){
-        System.out.print(prompt);
-        while(true){
-            String input = this.scanner.nextLine();
-            try{
-                Float inputCastInt = Float.parseFloat(input);
-                return inputCastInt;
-            }catch(Exception e){
-                System.out.println("The input: "+ input+ " can not be translated into a number");
-            }
-        }
-    }
-
     private Boolean acceptInput(){
         while(true){
             System.out.print("Finish process yes[y] / no[n]");
@@ -135,6 +165,7 @@ public class KundenInputHandler {
                 return true;
             }
             if(input.equals("n")){
+                System.out.println("Process was aborted");
                 return false;
             }
         }
@@ -144,4 +175,7 @@ public class KundenInputHandler {
         System.out.println(number + ". "+ kunde.toString());
     } 
     
+    private void errorNoKunden() {
+        System.out.println("There are no Customer/s found");
+    }
 }

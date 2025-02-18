@@ -22,10 +22,10 @@ public class ConsoleAdapter {
     private final String KUNDENCOMMAND = "kunde";
     private final String GETREANKECOMMAND = "getraenke";
     private final String HELPCOMMAND = "help";
-    
+    private final String WELCOMEMESSAGE = "TODO add welcome with short explaination"
+
     private final Scanner scanner;
     private final boolean isRunning;
-    private final String welcomeMessageString = "TODO add welcome with short explaination"; 
     private final Map<String, Runnable> getraenkeCommandMap;
     private final Map<String, Runnable> kundeCommandMap;
     private final GetraenkeInputHandler getraenkeInputHandler;
@@ -34,21 +34,19 @@ public class ConsoleAdapter {
 
     public ConsoleAdapter(KundenInputHandler kundenInputHandler, 
                           GetraenkeInputHandler getraenkeInputHandler, 
-                          kundeusecases kundenUseCases) {
+                          kundeusecases kundenUseCases,
+                          Scanner scanner) {
 
-        this.scanner = new Scanner(System.in);
+        this.scanner = scanner;
         this.isRunning = true;
-        this.getraenkeInputHandler = new GetraenkeInputHandler(scanner);
-        this.kundenInputHandler = new KundenInputHandler(scanner,kundenUseCases);
+        this.getraenkeInputHandler = getraenkeInputHandler;
+        this.kundenInputHandler = kundenInputHandler;
         this.getraenkeCommandMap = this.getraenkeInputHandler.getGetrankeCommandMap();
         this.kundeCommandMap = this.kundenInputHandler.getKundeCommandMap();
     }
 
-
-    
-
     public void start() {
-        System.out.println(welcomeMessageString);
+        System.out.println(WELCOMEMESSAGE);
         printGetraenkeOptionTopLevel();
         printKundenOptionTopLevel();
         Map <String,Runnable> commandMap = null;
