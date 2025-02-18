@@ -1,13 +1,20 @@
 package com.example.entities;
-
-import java.util.UUID;
+import com.example.repositories.GetraenkeRepository;
+import com.example.util.EntityWrapper;
 import com.example.valueobjects.Preis;
-public class Produkt implements Preis.Priced{
-    UUID uuid;
-    String name;
-    String beschreibung;
-    String kategorie;
-    Preis preis;
+public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
+    private String name;
+    private String beschreibung;
+    private String kategorie;
+    private Preis preis;
 
     Iterable<Pfandwert> pfand;
+    public Preis getCurrentPreis(){
+        return preis;
+    }
+
+    public void setPreis(Preis preis, GetraenkeRepository repo){
+        this.preis = preis;
+        repo.addPrice(preis);
+    }
 }
