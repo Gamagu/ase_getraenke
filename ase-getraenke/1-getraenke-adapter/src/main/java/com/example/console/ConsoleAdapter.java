@@ -22,8 +22,8 @@ public class ConsoleAdapter {
     private final String KUNDENCOMMAND = "kunde";
     private final String GETREANKECOMMAND = "getraenke";
     private final String HELPCOMMAND = "help";
-    private final String WELCOMEMESSAGE = "TODO add welcome with short explaination";
-    
+    private final String WELCOMEMESSAGE = "TODO add welcome with short explaination"
+
     private final Scanner scanner;
     private final boolean isRunning;
     private final Map<String, Runnable> getraenkeCommandMap;

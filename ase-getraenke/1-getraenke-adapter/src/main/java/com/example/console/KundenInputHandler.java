@@ -55,7 +55,6 @@ public class KundenInputHandler {
         }
         List<Kunde> kundenList = StreamSupport.stream(kundenOptVec.get().spliterator(), false)
                                  .collect(Collectors.toList());
-
         int count = 1;
         for(Kunde kunde : kundenList){
             printKundeWithNumber(kunde,count);
@@ -111,7 +110,6 @@ public class KundenInputHandler {
             System.out.println(bestellung.toString());
         }
     }
-
     public Map<String, Runnable> getKundeCommandMap() {
         return kundeCommandMap;
     }
