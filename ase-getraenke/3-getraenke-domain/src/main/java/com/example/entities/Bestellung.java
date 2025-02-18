@@ -1,6 +1,5 @@
 package com.example.entities;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;

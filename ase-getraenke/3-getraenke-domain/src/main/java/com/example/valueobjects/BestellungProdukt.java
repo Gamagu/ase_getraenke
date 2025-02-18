@@ -1,10 +1,10 @@
 package com.example.valueobjects;
 
 import com.example.entities.Produkt;
-import com.example.repositories.GetraenkeRepository;
 
 public class BestellungProdukt {
     Produkt produkt;
+    Iterable<Pfandwert> pfand;
     Preis preis;
     int menge;
 
@@ -12,6 +12,7 @@ public class BestellungProdukt {
         this.menge = menge;
         this.preis = preis;
         this.produkt = produkt;
+        pfand = produkt.getPfandwert();
     }
 
     public Produkt getProdukt(){

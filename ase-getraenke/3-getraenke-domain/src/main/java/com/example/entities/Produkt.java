@@ -1,4 +1,6 @@
 package com.example.entities;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.stream.StreamSupport;
 
 import com.example.repositories.GetraenkeRepository;
@@ -10,7 +12,7 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
     private String beschreibung;
     private String kategorie;
     private Preis preis;
-    Iterable<Pfandwert> pfand;
+    private Iterable<Pfandwert> pfand;
 
     public Produkt(String name, String beschreibung, String kategory){
         this.kategorie = kategory;
@@ -20,6 +22,14 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
 
     public Preis getCurrentPreis(){
         return preis;
+    }
+
+    public Iterable<Pfandwert> getPfandwert(){
+        ArrayList<Pfandwert> ret = new ArrayList<>();
+        for(Pfandwert r : pfand){
+            ret.add(r);
+        }
+        return ret;
     }
 
     public void setPreis(Preis preis, GetraenkeRepository repo){

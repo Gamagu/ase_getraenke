@@ -15,7 +15,6 @@ import com.example.valueobjects.Pfandwert;
 import com.example.valueobjects.Preis;
 import com.example.valueobjects.Preis.Priced;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 

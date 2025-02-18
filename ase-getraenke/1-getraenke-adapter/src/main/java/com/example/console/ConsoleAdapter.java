@@ -1,20 +1,7 @@
 package com.example.console;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.UUID;
-
-import javax.print.DocFlavor.STRING;
-
-import com.example.entities.Bestellung;
-import com.example.entities.Kunde;
-import com.example.entities.Pfandwert;
-import com.example.entities.Produkt;
-import com.example.entities.Zahlungsvorgang;
-import com.example.util.Pair;
-import com.example.valueobjects.Preis;
 import com.example.kundeusecases;
 
 public class ConsoleAdapter {
@@ -22,7 +9,7 @@ public class ConsoleAdapter {
     private final String KUNDENCOMMAND = "kunde";
     private final String GETREANKECOMMAND = "getraenke";
     private final String HELPCOMMAND = "help";
-    private final String WELCOMEMESSAGE = "TODO add welcome with short explaination"
+    private final String WELCOMEMESSAGE = "TODO add welcome with short explaination";
 
     private final Scanner scanner;
     private final boolean isRunning;
