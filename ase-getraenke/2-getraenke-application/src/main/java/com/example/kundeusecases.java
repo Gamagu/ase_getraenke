@@ -6,11 +6,11 @@ import com.example.entities.Bestellung;
 import com.example.entities.Kunde;
 
 public abstract class kundeusecases {
-    abstract void createKunde(String name, String nachname);
-    abstract Iterable<Kunde> getAllKunden();
-    abstract void setName(Kunde uuid, String name, String nachname);
-    abstract Kunde getKunde(UUID uuid);
-    abstract double getKundenBalance(Kunde kunde);
+    public abstract void createKunde(String name, String nachname, String eMail);
+    public abstract Iterable<Kunde> getAllKunden();
+    public abstract void setName(Kunde uuid, String name, String nachname);
+    public abstract Kunde getKunde(UUID uuid);
+    public abstract double getKundenBalance(Kunde kunde);
 
-    abstract Iterable<Bestellung> getAllBestellungen(Kunde kunde);
+    public abstract Iterable<Bestellung> getAllBestellungen(Kunde kunde);
 }

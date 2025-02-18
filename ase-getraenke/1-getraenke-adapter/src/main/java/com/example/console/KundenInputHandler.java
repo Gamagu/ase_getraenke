@@ -1,5 +1,6 @@
 package com.example.console;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,8 @@ public class KundenInputHandler {
 
     private void handleSetNameInput() {
         Iterable<Kunde> kundenIter = this.kundeUseCases.getAllKunden();
-        List<Kunde> kundenList;
+        List<Kunde> kundenList = new ArrayList<Kunde>();
+        kundenList.addAll(kundenList);
         int count = 1;
         for(Kunde kunde : kundenIter) {
             printKundeWithNumber(kunde, count);
