@@ -43,7 +43,7 @@ public class KundenInputHandler {
         String eMail = readStringInputWithPrompt("E-Mail: ");
         if(acceptInput()){
             kundeUseCases.createKunde(name, nachname, eMail);
-            System.out.println("Kunde was create succesfully");
+            System.out.println("Kunde was created succesfully");
         }
     }
 
@@ -73,10 +73,7 @@ public class KundenInputHandler {
         System.out.println(kunde.toString());
         String newFirstName = readStringInputWithPrompt("Please enter a new first Name: ");
         String newSecondName = readStringInputWithPrompt("Please enter a new first Name: ");
-       
-
         this.kundeUseCases.setName(kunde, newFirstName, newSecondName);
-        
         System.out.println("Name was succesfully changed");
     }
 
@@ -114,8 +111,7 @@ public class KundenInputHandler {
             System.out.println(bestellung.toString());
         }
     }
-    
-    
+
     public Map<String, Runnable> getKundeCommandMap() {
         return kundeCommandMap;
     }
