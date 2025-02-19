@@ -47,9 +47,14 @@ public class KundenInputHandler {
     }
 
     private void handleGetAllKundenInput() {
-        Iterable<Kunde> kundenOptVec = this.kundeUseCases.getAllKunden();
-        List<Kunde> kundenList = StreamSupport.stream(kundenOptVec.spliterator(), false)
+        Iterable<Kunde> kundenVec = this.kundeUseCases.getAllKunden();
+        List<Kunde> kundenList = StreamSupport.stream(kundenVec.spliterator(), false)
                                  .collect(Collectors.toList());
+        
+        if(kundenList.isEmpty()){
+            errorNoKunden();
+            return;
+        }
         int count = 1;
         for(Kunde kunde : kundenList){
             printKundeWithNumber(kunde,count);
