@@ -1,6 +1,5 @@
 package com.example.repositories;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +33,8 @@ public abstract class GetraenkeRepository {
     abstract public void addLieferung(Lieferung lieferung);
     
     
-    abstract public Kunde getKunde(UUID id);
+    abstract public Optional<Kunde> getKunde(UUID id);
+    abstract public Optional<Kunde> getKunde(String email);
     abstract public Produkt getProdukt(UUID id);
     abstract public Pfandwert getPfandwert(UUID id);
     abstract public Bestellung getBestellungen(UUID id);

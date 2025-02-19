@@ -15,6 +15,7 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
     private Iterable<Pfandwert> pfand;
 
     public Produkt(String name, String beschreibung, String kategory){
+        super();
         this.kategorie = kategory;
         this.beschreibung = beschreibung;
         this.name = name;
@@ -43,6 +44,14 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
             assert(StreamSupport.stream(savedPfandwerte.spliterator(), false).anyMatch(t-> t.equals(wert)));
         }
         this.pfand = newPfand;
+    }
+
+    public double getPfandSum(){
+        double ret = 0;
+        for (Pfandwert p : pfand ){
+            ret += p.wert;
+        }
+        return ret;
     }
 
     @Override

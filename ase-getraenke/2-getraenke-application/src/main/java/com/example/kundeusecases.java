@@ -1,19 +1,55 @@
 package com.example;
 
 import java.util.Optional;
-import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.example.entities.Bestellung;
 import com.example.entities.Kunde;
+import com.example.entities.Zahlungsvorgang;
+import com.example.repositories.GetraenkeRepository;
 
 public abstract class kundeusecases {
-    public abstract void createKunde(String name, String nachname, String eMail);
-    // TODO sollte optional sein 
-    public abstract Optional<Iterable<Kunde>> getAllKunden();
-    public abstract void setName(Kunde uuid, String name, String nachname);
-    // TODO sollte optional sein 
-    public abstract Optional<Kunde> getKunde(String eMail);
-    public abstract double getKundenBalance(Kunde kunde);
+    final private GetraenkeRepository repo;
+    public kundeusecases(GetraenkeRepository repo){
+        this.repo = repo;
+    }
 
-    public abstract Iterable<Bestellung> getAllBestellungen(Kunde kunde);
+    public Kunde createKunde(String name, String nachname, String eMail){
+        Kunde k = new Kunde(name, nachname, eMail);
+        repo.addKunde(k);
+        return k;
+    }
+
+    public Iterable<Kunde> getAllKunden(){
+        return repo.getKunden();
+    }
+    public void setName(Kunde kunde, String name, String nachname){
+        kunde.setName(name, nachname);
+    }
+
+    public Optional<Kunde> getKunde(String eMail){
+        return repo.getKunde(eMail);
+    }
+
+    public double getKundenBalance(Kunde kunde){
+        return getKundenOrderSum(kunde) - getKundenZahlungenSum(kunde);
+    }   
+
+    private double getKundenOrderSum(Kunde kunde){
+        return StreamSupport.stream(getAllBestellungen(kunde).spliterator(), false).map(order -> order.getSumOfOrder()).mapToDouble(order -> order).sum();
+    }
+
+    private double getKundenZahlungenSum(Kunde kunde){
+        return StreamSupport.stream(getAllBestellungen(kunde).spliterator(), false).map(order -> order.getSumOfOrder()).mapToDouble(order -> order).sum();
+    }
+
+    public Iterable<Zahlungsvorgang> getAllZahlungen(Kunde kunde){
+        return StreamSupport.stream(repo.getZahlungsvorgaenge().spliterator(), false).filter(zahl -> zahl.getKunde().equals(kunde)).toList();
+    }
+
+
+    public Iterable<Bestellung> getAllBestellungen(Kunde kunde){
+        return StreamSupport.stream(repo.getBestellungen().spliterator(), false).filter(order -> order.getKunde().equals(kunde)).collect(Collectors.toList());
+    }
 }

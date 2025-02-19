@@ -1,6 +1,5 @@
 package com.example.valueobjects;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public final class Preis {
