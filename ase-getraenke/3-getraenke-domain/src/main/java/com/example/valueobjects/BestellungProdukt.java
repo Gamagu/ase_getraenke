@@ -26,4 +26,6 @@ public class BestellungProdukt {
     public Preis getPreis(){
         return preis;
     }
+
+    
 }

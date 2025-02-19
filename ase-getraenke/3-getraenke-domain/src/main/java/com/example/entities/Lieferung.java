@@ -2,8 +2,6 @@ package com.example.entities;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.example.valueobjects.Preis;
-
 public class Lieferung {
     public final static AtomicInteger counter = new AtomicInteger();
     int lieferId;
