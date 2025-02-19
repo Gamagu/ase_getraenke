@@ -10,6 +10,7 @@ public final class Pfandwert extends EntityWrapper<Pfandwert> {
     final public LocalDateTime creationDate;
 
     public Pfandwert(double wert, String beschreibung){
+        super();
         this.wert = wert;
         this.beschreibung = beschreibung;
         creationDate =  LocalDateTime.now();

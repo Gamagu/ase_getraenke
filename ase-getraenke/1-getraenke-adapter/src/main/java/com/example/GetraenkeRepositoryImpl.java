@@ -15,7 +15,6 @@ import com.example.valueobjects.Pfandwert;
 import com.example.valueobjects.Preis;
 import com.example.valueobjects.Preis.Priced;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
@@ -79,11 +78,10 @@ public class GetraenkeRepositoryImpl extends GetraenkeRepository {
         lieferungen.add(lieferung);
     }
 
-    public Kunde getKunde(UUID id) {
+    public Optional<Kunde> getKunde(UUID id) {
         return kunden.stream()
                 .filter(kunde -> kunde.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Kunde mit ID " + id + " existiert nicht"));
+                .findFirst();
     }
 
     public Produkt getProdukt(UUID id) {
@@ -143,4 +141,8 @@ public class GetraenkeRepositoryImpl extends GetraenkeRepository {
         Preis p = new Preis(price, obj, date);
         return preise.stream().filter(preis -> preis.equals(p)).findFirst();
      }
+
+    public Optional<Kunde> getKunde(String email){
+        return kunden.stream().filter(kunde -> kunde.getMail().equals(email)).findFirst();
+    }
 }

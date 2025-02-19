@@ -11,9 +11,14 @@ public class Zahlungsvorgang extends EntityWrapper<Zahlungsvorgang>{
     LocalDateTime date;
 
     public Zahlungsvorgang(Kunde kunde, String zahlungsweg, double betrag, LocalDateTime datetime){
+        super();
         this.kunde = kunde;
         this.zahlungsweg = zahlungsweg;
         this.betrag = betrag;
         this.date = datetime;
+    }
+
+    public Kunde getKunde(){
+        return kunde;
     }
 }

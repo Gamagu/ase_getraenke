@@ -1,4 +1,6 @@
 package com.example.entities;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.stream.StreamSupport;
 
 import com.example.repositories.GetraenkeRepository;
@@ -10,9 +12,10 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
     private String beschreibung;
     private String kategorie;
     private Preis preis;
-    Iterable<Pfandwert> pfand;
+    private Iterable<Pfandwert> pfand;
 
     public Produkt(String name, String beschreibung, String kategory){
+        super();
         this.kategorie = kategory;
         this.beschreibung = beschreibung;
         this.name = name;
@@ -20,6 +23,14 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
 
     public Preis getCurrentPreis(){
         return preis;
+    }
+
+    public Iterable<Pfandwert> getPfandwert(){
+        ArrayList<Pfandwert> ret = new ArrayList<>();
+        for(Pfandwert r : pfand){
+            ret.add(r);
+        }
+        return ret;
     }
 
     public void setPreis(Preis preis, GetraenkeRepository repo){
@@ -33,6 +44,14 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
             assert(StreamSupport.stream(savedPfandwerte.spliterator(), false).anyMatch(t-> t.equals(wert)));
         }
         this.pfand = newPfand;
+    }
+
+    public double getPfandSum(){
+        double ret = 0;
+        for (Pfandwert p : pfand ){
+            ret += p.wert;
+        }
+        return ret;
     }
 
     @Override
