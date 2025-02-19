@@ -2,6 +2,7 @@ package com.example;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -18,10 +19,10 @@ import com.example.valueobjects.BestellungProdukt;
 import com.example.valueobjects.Pfandwert;
 import com.example.valueobjects.Preis;
 
-class GetraenkeUsecases {
+public class getraenkeusecases {
     private final GetraenkeRepository repo;
 
-    GetraenkeUsecases(GetraenkeRepository repo) {
+    getraenkeusecases(GetraenkeRepository repo) {
         this.repo = repo;
     }
 
@@ -107,8 +108,8 @@ class GetraenkeUsecases {
         produkt.setPreis(p, repo);
     }
 
-     public Produkt getProduct(UUID produktId) throws Exception{
-        return repo.getProdukt(produktId);
+     public Optional<Produkt> getProduct(UUID produktId) throws Exception{
+        return Optional.of(repo.getProdukt(produktId));
     }
 
      public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
