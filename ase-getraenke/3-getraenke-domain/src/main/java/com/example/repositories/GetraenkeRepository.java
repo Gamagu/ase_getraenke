@@ -37,7 +37,7 @@ public abstract class GetraenkeRepository {
     abstract public Optional<Kunde> getKunde(String email);
     abstract public Produkt getProdukt(UUID id);
     abstract public Pfandwert getPfandwert(UUID id);
-    abstract public Bestellung getBestellungen(UUID id);
+    abstract public Optional<Bestellung> getBestellungen(Kunde kunde);
     abstract public Zahlungsvorgang getZahlungsvorgang(UUID id);
     abstract public Optional<Preis> getPreis(Priced obj, double price, LocalDateTime data);
 

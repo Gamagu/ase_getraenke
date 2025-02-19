@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.example.kundeusecases;
 import com.example.entities.Bestellung;
@@ -45,12 +47,8 @@ public class KundenInputHandler {
     }
 
     private void handleGetAllKundenInput() {
-        Optional<Iterable<Kunde>> kundenOptVec = this.kundeUseCases.getAllKunden();
-        if(kundenOptVec.isEmpty()){
-            errorNoKunden();
-            return;
-        }
-        List<Kunde> kundenList = StreamSupport.stream(kundenOptVec.get().spliterator(), false)
+        Iterable<Kunde> kundenOptVec = this.kundeUseCases.getAllKunden();
+        List<Kunde> kundenList = StreamSupport.stream(kundenOptVec.spliterator(), false)
                                  .collect(Collectors.toList());
         int count = 1;
         for(Kunde kunde : kundenList){
@@ -112,12 +110,9 @@ public class KundenInputHandler {
     }
 
     private Optional<Kunde> pickOneUserFromAllUsers(){
-        Optional<Iterable<Kunde>> kundenOptVec = this.kundeUseCases.getAllKunden();
-        if(kundenOptVec.isEmpty()){
-            return Optional.empty();
-        }
+        Iterable<Kunde> kundenOptVec = this.kundeUseCases.getAllKunden();
         List<Kunde> kundenList = new ArrayList<Kunde>();
-        kundenList = StreamSupport.stream(kundenOptVec.get().spliterator(), false).collect(Collectors.toList());
+        kundenList = StreamSupport.stream(kundenOptVec.spliterator(), false).collect(Collectors.toList());
         int count = 1;
         for(Kunde kunde : kundenList) {
             printKundeWithNumber(kunde, count);

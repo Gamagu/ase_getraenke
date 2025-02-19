@@ -145,4 +145,11 @@ public class GetraenkeRepositoryImpl extends GetraenkeRepository {
     public Optional<Kunde> getKunde(String email){
         return kunden.stream().filter(kunde -> kunde.getMail().equals(email)).findFirst();
     }
+
+    @Override
+    public Optional<Bestellung> getBestellungen(Kunde kunde) {
+        return bestellungen.stream()
+                .filter(bestellung -> bestellung.getKunde().equals(kunde))
+                .findFirst();
+    }
 }
