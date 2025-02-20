@@ -78,7 +78,7 @@ public class GetraenkeInputHandler {
     // Handle getPfandWert logic here
     }
     
-    //TODO fix Type Issue 
+    
     public void handleGetAllProductsInput() {
         Iterable<Produkt> productVec = getraenkeusecases.getAllProducts();
         List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
@@ -93,7 +93,7 @@ public class GetraenkeInputHandler {
             count++;
         }
     }
-    // TODO fix TypeIssue
+    
     public void handleGetPriceForProduktInput() {
         Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
@@ -103,7 +103,7 @@ public class GetraenkeInputHandler {
         Produkt produkt = produktOptional.get();
         System.out.println("The Price of the product: \n "+ produkt.toString() + 
                            "\n is: \n" + 
-                           getraenkeRepositoryImpl.getPreisForProdukt(produkt));
+                           getraenkeusecases.getPriceForProdukt(produkt));
     }
     
     public void handleGetPriceHistoryForProduktInput() {
@@ -193,9 +193,8 @@ public class GetraenkeInputHandler {
         return this.getrankeCommandMap;
     }
 
-    //TODO fix Type Issue 
     private Optional<Produkt> pickOneProductFromAllProducts() {
-        Iterable<Pair<Produkt, String>> productVec = getraenkeusecases.getAllProducts();
+        Iterable<Produkt> productVec = getraenkeusecases.getAllProducts();
         List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
                                     .collect(Collectors.toList());
         if(productList.isEmpty()){
@@ -214,7 +213,8 @@ public class GetraenkeInputHandler {
             }
             System.out.println("Something went wrong the "+ indexProdukt +  " is not in the list");
         }
-        System.out.println("Chosen Produkt: " productList.get(indexProdukt-1).toString());
+        Produkt produkt = productList.get(indexProdukt-1);
+        System.out.println("Chosen Produkt: "+ produkt.toString());
         return Optional.of(productList.get(indexProdukt-1));
     }
 

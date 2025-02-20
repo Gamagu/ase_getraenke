@@ -60,18 +60,18 @@ public class getraenkeusecases {
 
     // for thpublic e next functions, the of pair is the identifier and the second
     // is a decription. UUID could be mapped to incrementing numbers.
-    public Iterable<Pair<Pfandwert, String>> getAllPfandwerte() {
+    public Iterable<Pfandwert> getAllPfandwerte() {
         return StreamSupport.stream(repo.getPfandwerte().spliterator(), false)
-                .map(wert -> new Pair<>(wert, wert.toString())).collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public Pfandwert getPfandWert(UUID id) {
         return repo.getPfandwert(id);
     }
 
-    public Iterable<Pair<Produkt, String>> getAllProducts() {
+    public Iterable<Produkt> getAllProducts() {
         return StreamSupport.stream(repo.getProdukte().spliterator(), false)
-                .map(wert -> new Pair<>(wert, wert.toString())).collect(Collectors.toList());
+               .collect(Collectors.toList());
     }
 
     public Preis getPriceForProdukt(Produkt product) {
