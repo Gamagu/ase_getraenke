@@ -1,6 +1,5 @@
 package com.example.console;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,13 +9,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.xml.transform.Templates;
-
-import com.example.entities.Kunde;
 import com.example.entities.Produkt;
-import com.example.util.Pair;
 import com.example.valueobjects.Preis;
-import com.example.GetraenkeRepositoryImpl;
 import com.example.getraenkeusecases;
 
 public class GetraenkeInputHandler {
@@ -186,7 +180,7 @@ public class GetraenkeInputHandler {
     }
     // TODO Refactor pickOneUserOfAllUsers so it can be accesed here 
     public void handleAddZahlungsvorgangInput() {
-    // Handle addZahlungsvorgang logic here
+    
     }
 
     public Map<String,Runnable> getGetrankeCommandMap() {
@@ -259,4 +253,5 @@ public class GetraenkeInputHandler {
         }
     }
 
+    
 }
