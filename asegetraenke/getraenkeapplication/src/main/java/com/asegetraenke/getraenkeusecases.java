@@ -2,6 +2,7 @@ package com.asegetraenke;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -19,10 +20,10 @@ import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
 
 
-class GetraenkeUsecases {
+public class getraenkeusecases {
     private final GetraenkeRepository repo;
 
-    GetraenkeUsecases(GetraenkeRepository repo) {
+    getraenkeusecases(GetraenkeRepository repo) {
         this.repo = repo;
     }
 
@@ -60,18 +61,18 @@ class GetraenkeUsecases {
 
     // for thpublic e next functions, the of pair is the identifier and the second
     // is a decription. UUID could be mapped to incrementing numbers.
-    public Iterable<Pair<Pfandwert, String>> getAllPfandwerte() {
+    public Iterable<Pfandwert> getAllPfandwerte() {
         return StreamSupport.stream(repo.getPfandwerte().spliterator(), false)
-                .map(wert -> new Pair<>(wert, wert.toString())).collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public Pfandwert getPfandWert(UUID id) {
         return repo.getPfandwert(id);
     }
 
-    public Iterable<Pair<Produkt, String>> getAllProducts() {
+    public Iterable<Produkt> getAllProducts() {
         return StreamSupport.stream(repo.getProdukte().spliterator(), false)
-                .map(wert -> new Pair<>(wert, wert.toString())).collect(Collectors.toList());
+               .collect(Collectors.toList());
     }
 
     public Preis getPriceForProdukt(Produkt product) {
@@ -108,8 +109,8 @@ class GetraenkeUsecases {
         produkt.setPreis(p, repo);
     }
 
-     public Produkt getProduct(UUID produktId) throws Exception{
-        return repo.getProdukt(produktId);
+     public Optional<Produkt> getProduct(UUID produktId) throws Exception{
+        return Optional.of(repo.getProdukt(produktId));
     }
 
      public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
