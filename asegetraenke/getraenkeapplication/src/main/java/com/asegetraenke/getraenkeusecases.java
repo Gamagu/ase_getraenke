@@ -10,7 +10,7 @@ import com.asegetraenke.entities.Bestellung;
 import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Lieferung;
 import com.asegetraenke.entities.Produkt;
-import com.asegetraenke.entities.Zahlungsvorgang;
+import com.asegetraenke.repositories.CustomerRepository;
 import com.asegetraenke.repositories.GetraenkeRepository;
 import com.asegetraenke.util.Pair;
 import com.asegetraenke.util.Triple;
@@ -20,10 +20,11 @@ import com.asegetraenke.valueobjects.Preis;
 
 
 class GetraenkeUsecases {
-    private final GetraenkeRepository repo;
-
-    GetraenkeUsecases(GetraenkeRepository repo) {
-        this.repo = repo;
+    final private GetraenkeRepository grepo;
+    //final private CustomerRepository crepo;
+    public GetraenkeUsecases(GetraenkeRepository grepo, CustomerRepository crepo){
+        this.grepo = grepo;
+        //this.crepo = crepo;
     }
 
     /**
@@ -35,42 +36,42 @@ class GetraenkeUsecases {
          public void acceptLieferung(Iterable<Pair<Produkt, Integer>> produkte, LocalDateTime date) throws Exception{
             int lieferId = Lieferung.counter.incrementAndGet();
             for(Pair<Produkt,Integer> prod : produkte){
-                repo.addLieferung(new Lieferung(prod.key(), prod.value(), lieferId));
+                grepo.addLieferung(new Lieferung(prod.key(), prod.value(), lieferId));
             }
     }
 
     // soll npublic euen Pfandwert anlegen
      public void addPfandWert(String beschreibung, double wert) throws Exception{
         Pfandwert pfandwert = new Pfandwert(wert, beschreibung);
-        repo.addPfandwert(pfandwert);
+        grepo.addPfandwert(pfandwert);
     }
 
     // neuen public Preis für Pfand setzen
      public Pfandwert setPfandwert(Pfandwert pfandwert, double newValue) throws Exception{
         Pfandwert newPfandwert = new Pfandwert(newValue, pfandwert.beschreibung);
-        repo.addPfandwert(newPfandwert);
+        grepo.addPfandwert(newPfandwert);
         return newPfandwert;
     }
 
     // setzt public Pfandwert für ein Produkt. UUIDs sind die IDs der jeweiligen
     // Produkte und der value des pairs, ist die anzahl des Pfandwertes.
      public void setPfandwertProdukt(Produkt produkt, Iterable<Pfandwert> pfandliste) throws Exception{
-        produkt.setPfandAssignment(pfandliste, repo);
+        produkt.setPfandAssignment(pfandliste, grepo);
     }
 
     // for thpublic e next functions, the of pair is the identifier and the second
     // is a decription. UUID could be mapped to incrementing numbers.
     public Iterable<Pair<Pfandwert, String>> getAllPfandwerte() {
-        return StreamSupport.stream(repo.getPfandwerte().spliterator(), false)
+        return StreamSupport.stream(grepo.getPfandwerte().spliterator(), false)
                 .map(wert -> new Pair<>(wert, wert.toString())).collect(Collectors.toList());
     }
 
     public Pfandwert getPfandWert(UUID id) {
-        return repo.getPfandwert(id);
+        return grepo.getPfandwert(id);
     }
 
     public Iterable<Pair<Produkt, String>> getAllProducts() {
-        return StreamSupport.stream(repo.getProdukte().spliterator(), false)
+        return StreamSupport.stream(grepo.getProdukte().spliterator(), false)
                 .map(wert -> new Pair<>(wert, wert.toString())).collect(Collectors.toList());
     }
 
@@ -79,12 +80,12 @@ class GetraenkeUsecases {
     }
 
     public Iterable<Preis> getPriceHistoryForProdukt(Produkt product) {
-        return repo.getPreisForProdukt(product);
+        return grepo.getPreisForProdukt(product);
     }
 
     public double setPriceForProdukt(Produkt product, double preis) {
         Preis p = new Preis(preis, product);
-        product.setPreis(p, repo);
+        product.setPreis(p, grepo);
         return p.getPrice();
     }
 
@@ -93,44 +94,36 @@ class GetraenkeUsecases {
     }
 
     public int getAmountLieferungenForProdukt(Produkt product) {
-        return StreamSupport.stream(repo.getLieferungen(product).spliterator(), false)
+        return StreamSupport.stream(grepo.getLieferungen(product).spliterator(), false)
                 .mapToInt(lieferung -> lieferung.getMenge()).sum();
     }
 
     public int getOrderedAmountForProdukt(Produkt product) {
-        return StreamSupport.stream(repo.getBestellungen().spliterator(), false).mapToInt(lieferung -> lieferung
+        return StreamSupport.stream(grepo.getBestellungen().spliterator(), false).mapToInt(lieferung -> lieferung
                 .getProdukte().filter(p -> p.getProdukt().equals(product)).mapToInt(p -> p.getMenge()).sum()).sum();
     }
 
      public void addProdukt(String name, String beschreibung, String kategorie, double preis) throws Exception{
          Produkt produkt = new Produkt(name, beschreibung, kategorie);
         Preis p = new Preis(preis, produkt);
-        produkt.setPreis(p, repo);
+        produkt.setPreis(p, grepo);
     }
 
      public Produkt getProduct(UUID produktId) throws Exception{
-        return repo.getProdukt(produktId);
+        return grepo.getProdukt(produktId);
     }
 
      public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
         ArrayList<BestellungProdukt> prodList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         for(Triple<Produkt,Integer, Double> prod : produkte){
-            Preis preis = repo.getPreis(prod.first(), prod.value(), now).orElse(null);
+            Preis preis = grepo.getPreis(prod.first(), prod.value(), now).orElse(null);
             if(preis == null){
                 preis = new Preis(prod.number(), prod.first());
-                repo.addPrice(preis);
+                grepo.addPrice(preis);
             }
             prodList.add(new BestellungProdukt(prod.first(), preis, prod.value()));
         }
         return new Bestellung(kunde, now, prodList);
     }
-
-     public Zahlungsvorgang addZahlungsvorgang(Kunde kunde, String zahlungsweg, double betrag,
-            LocalDateTime date) throws Exception{
-                Zahlungsvorgang z = new Zahlungsvorgang(kunde, zahlungsweg,betrag, date);
-                repo.addZahlungsVorgang(z);
-                return z;
-            }
-
 }
