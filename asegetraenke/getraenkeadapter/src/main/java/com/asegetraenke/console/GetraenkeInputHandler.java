@@ -1,5 +1,7 @@
 package com.asegetraenke.console;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,10 +12,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Produkt;
+import com.asegetraenke.util.Triple;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
 import com.asegetraenke.getraenkeusecases;
+import com.asegetraenke.kundeusecases;
 
 public class GetraenkeInputHandler {
     private final String NOPRODUKTMESSAGE = "There are no Product/s found";
@@ -22,11 +27,13 @@ public class GetraenkeInputHandler {
     private final Scanner scanner;
     private final Map<String,Runnable> getrankeCommandMap;
     private final getraenkeusecases getraenkeusecases;
+    private final kundeusecases kundeUseCases;
 
-    public GetraenkeInputHandler(Scanner sc, getraenkeusecases getraenkeusecases){
+    public GetraenkeInputHandler(Scanner sc, getraenkeusecases getraenkeusecases, kundeusecases kundeusecases){
         this.scanner = sc;
         this.getrankeCommandMap = initializeCommandMapGetraenke();
         this.getraenkeusecases = getraenkeusecases;
+        this.kundeUseCases = kundeusecases;
     }
 
     private Map<String, Runnable> initializeCommandMapGetraenke() {
@@ -51,7 +58,7 @@ public class GetraenkeInputHandler {
 
     //TODO Ask Nikals what he was thinking here 
     public void handleAcceptLieferungInput() {
-        // Handle acceptLieferung logic here
+
     }
 
     public void handleAddPfandWertInput() {
@@ -92,7 +99,6 @@ public class GetraenkeInputHandler {
         }
     }
     
-    //TODO Ask Nikals what he is thinking here 
     public void handleSetPfandwertProduktInput() {
         Optional<Pfandwert> pfandwertOptional = pickOnePfandwertFromAllPfandwerts();
         if (pfandwertOptional.isEmpty()) {
@@ -241,13 +247,63 @@ public class GetraenkeInputHandler {
         }
         
     }
-    // TODO Refactor pickOneUserOfAllUsers so it can be accesed here 
+
     public void handleAddBestellungInput() {
-    
+        Optional<Kunde> kundeOptional = pickOneUserFromAllUsers();
+        if(kundeOptional.isEmpty()){
+            errorNoKunden();
+            return;
+        }
+        Kunde kunde = kundeOptional.get();
+        int amountProdukts = readIntInputWithPrompt("How many Products do you want to add: ");
+        List<Triple<Produkt, Integer, Double>> bestellungsList = new ArrayList<>();
+        for(int i = 0; i < amountProdukts; i++){
+            while(true){
+                try {
+                    System.out.println("Produkt number :"+ (i+1));
+                    Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
+                    int amount = readIntInputWithPrompt("Wie viele Produkte: ");
+                    // TODO NAchfragen bei niklas keine Beschreibung für das Attribut 
+                    Double value = readDoubleInputWithPrompt("Wie viel kostetet das Produkt: ");
+                    bestellungsList.add(new Triple<Produkt,Integer,Double>(produktOptional.get(), amount, value));
+                    break;
+                } catch (Exception e) {
+                    System.out.println("Error try this product again");
+                    System.out.println(e.getMessage());
+                }
+            }
+        }
+        try {
+            getraenkeusecases.addBestellung(kunde, bestellungsList);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
-    // TODO Refactor pickOneUserOfAllUsers so it can be accesed here 
+
     public void handleAddZahlungsvorgangInput() {
-    
+        Optional<Kunde> kundeOptional = pickOneUserFromAllUsers();
+        if(kundeOptional.isEmpty()){
+            errorNoKunden();
+            return;
+        }
+        Kunde kunde = kundeOptional.get();
+        String zahlungsWeString = readStringInputWithPrompt("Zahlungsweg: ");
+        Double betrag = readDoubleInputWithPrompt("Betrag: ");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        
+        try {
+            getraenkeusecases.addZahlungsvorgang(kunde, zahlungsWeString, betrag, localDateTime);
+            System.out.println("Zahlungsvorgang wurde erfolgreich angelegt.");
+        } catch (Exception e) {
+            System.out.println("An Error Occurt while storing the : \n"+ 
+            "Kunde: " + kunde.toString() +"\n"+
+            "ZahlungsWeg: " + zahlungsWeString +"\n"+
+            "Betrag: " + betrag +"\n"+
+            "LocalDateTime: "+ localDateTime);
+            System.err.println(e.getMessage());
+        }
     }
 
     public Map<String,Runnable> getGetrankeCommandMap() {
@@ -304,6 +360,27 @@ public class GetraenkeInputHandler {
         return Optional.of(pfandwertList.get(indexProdukt-1));
     }
 
+    private Optional<Kunde> pickOneUserFromAllUsers(){
+        Iterable<Kunde> kundenOptVec = this.kundeUseCases.getAllKunden();
+        List<Kunde> kundenList = new ArrayList<Kunde>();
+        kundenList = StreamSupport.stream(kundenOptVec.spliterator(), false).collect(Collectors.toList());
+        int count = 1;
+        for(Kunde kunde : kundenList) {
+            printKundeWithNumber(kunde, count);
+            kundenList.add(kunde);
+            
+        }
+        int indexCustomer = 0;
+        while (true) {
+            indexCustomer = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexCustomer < count && indexCustomer > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexCustomer +  " is not in the list");
+        }
+        return Optional.of(kundenList.get(indexCustomer-1));
+    }
+    
     private void printProduktWithNumber(Produkt produkt, int number){
         System.out.println(number + ". "+ produkt.toString());
     }
@@ -311,6 +388,10 @@ public class GetraenkeInputHandler {
     private void printPfandwertWithNumber(Pfandwert pfandwert, int number){
         System.out.println(number + ". "+ pfandwert.toString());
     }
+
+    private void printKundeWithNumber(Kunde kunde, int number){
+        System.out.println(number + ". "+ kunde.toString());
+    } 
 
     private int readIntInputWithPrompt(String prompt){
         System.out.print(prompt);
@@ -365,5 +446,8 @@ public class GetraenkeInputHandler {
     private void errorNoPfandWert() {
         System.out.println(NOPFANDWERTMESSAGE);
     }
-    
+ 
+    private void errorNoKunden() {
+        System.out.println("There are no Customer/s found");
+    }
 }
