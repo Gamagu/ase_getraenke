@@ -3,7 +3,7 @@ package com.asegetraenke.console;
 import java.util.Map;
 import java.util.Scanner;
 
-import com.asegetraenke.KundeUsecases;
+import com.asegetraenke.KundenUsecases;
 
 public class ConsoleAdapter {
 
@@ -22,7 +22,7 @@ public class ConsoleAdapter {
 
     public ConsoleAdapter(KundenInputHandler kundenInputHandler, 
                           GetraenkeInputHandler getraenkeInputHandler, 
-                          KundeUsecases kundenUseCases,
+                          KundenUsecases kundenUseCases,
                           Scanner scanner) {
 
         this.scanner = scanner;

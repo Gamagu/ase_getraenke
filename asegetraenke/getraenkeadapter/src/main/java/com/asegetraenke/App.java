@@ -19,7 +19,7 @@ public class App {
         CustomerRepositoryImpl crepo = new CustomerRepositoryImpl(data);
 
         GetraenkeUsecases gusecases = new GetraenkeUsecases(grepo, crepo);
-        KundeUsecases cusecases = new KundeUsecases(grepo, crepo);
+        KundenUsecases cusecases = new KundenUsecases(grepo, crepo);
 
         Scanner scanner = new Scanner(System.in); 
         GetraenkeInputHandler gInputHandler = new GetraenkeInputHandler(scanner, gusecases, cusecases);

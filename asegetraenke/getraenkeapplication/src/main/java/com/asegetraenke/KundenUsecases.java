@@ -12,10 +12,10 @@ import com.asegetraenke.repositories.CustomerRepository;
 import com.asegetraenke.repositories.GetraenkeRepository;
 
 
-public class KundeUsecases {
+public class KundenUsecases {
     final private GetraenkeRepository grepo;
     final private CustomerRepository crepo;
-    public KundeUsecases(GetraenkeRepository grepo, CustomerRepository crepo){
+    public KundenUsecases(GetraenkeRepository grepo, CustomerRepository crepo){
         this.grepo = grepo;
         this.crepo = crepo;
     }
