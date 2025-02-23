@@ -56,9 +56,9 @@ public class GetraenkeInputHandler {
         return map;
     }
 
-    //TODO Ask Nikals what he was thinking here 
+    //TODO Ask Nikales what he was thinking here 
     public void handleAcceptLieferungInput() {
-
+        
     }
 
     public void handleAddPfandWertInput() {
@@ -263,8 +263,7 @@ public class GetraenkeInputHandler {
                     System.out.println("Produkt number :"+ (i+1));
                     Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
                     int amount = readIntInputWithPrompt("Wie viele Produkte: ");
-                    // TODO NAchfragen bei niklas keine Beschreibung für das Attribut 
-                    Double value = readDoubleInputWithPrompt("Wie viel kostetet das Produkt: ");
+                    Double value = readDoubleInputWithPrompt("Wie viel kostetet das einzelne Produkt: ");
                     bestellungsList.add(new Triple<Produkt,Integer,Double>(produktOptional.get(), amount, value));
                     break;
                 } catch (Exception e) {
