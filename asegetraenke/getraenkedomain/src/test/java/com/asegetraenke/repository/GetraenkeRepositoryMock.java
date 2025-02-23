@@ -80,13 +80,12 @@ public class GetraenkeRepositoryMock implements GetraenkeRepository, CustomerRep
                 .filter(kunde -> kunde.getId().equals(id))
                 .findFirst();
     }
-
-    public Bestellung getBestellungen(UUID id) {
-        return data.bestellungen.stream()
-                .filter(bestellung -> bestellung.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Bestellungen mit ID " + id + " existiert nicht"));
-    }
+    // @Override
+    // public Optional<Bestellung> getBestellungen(UUID id) {
+    //     return data.bestellungen.stream()
+    //             .filter(bestellung -> bestellung.getId().equals(id))
+    //             .findFirst();
+    // }
 
     public Iterable<Preis> getPreisForProdukt(Produkt produkt) {
         return data.preise.stream().filter(preis -> preis.getParentObject() == produkt).toList();
