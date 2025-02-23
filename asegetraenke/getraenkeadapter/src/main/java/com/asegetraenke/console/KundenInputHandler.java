@@ -9,16 +9,16 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.asegetraenke.kundeusecases;
+import com.asegetraenke.KundenUsecases;
 import com.asegetraenke.entities.Bestellung;
 import com.asegetraenke.entities.Kunde;
 
 public class KundenInputHandler {
     private final Scanner scanner;
     private final Map<String, Runnable> kundeCommandMap;
-    private final kundeusecases kundeUseCases;
+    private final KundenUsecases kundeUseCases;
     
-    public KundenInputHandler(Scanner scanner, kundeusecases kundeUseCases) {
+    public KundenInputHandler(Scanner scanner, KundenUsecases kundeUseCases) {
         this.scanner = scanner;
         this.kundeCommandMap = initializeCommandMapKunde();
         this.kundeUseCases = kundeUseCases;
