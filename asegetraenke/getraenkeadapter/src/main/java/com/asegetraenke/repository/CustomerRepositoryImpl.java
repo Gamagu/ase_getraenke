@@ -1,7 +1,6 @@
 package com.asegetraenke.repository;
 
 import java.util.Collections;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,11 +34,10 @@ public class CustomerRepositoryImpl extends CustomerRepository {
                 .findFirst();
     }
 
-    public Zahlungsvorgang getZahlungsvorgang(UUID id) {
+    public Optional<Zahlungsvorgang> getZahlungsvorgang(UUID id) {
         return data.zahlungsvorgaenge.stream()
                 .filter(zahlungsvorgang -> zahlungsvorgang.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Zahlungsvorgang mit ID " + id + " existiert nicht"));
+                .findFirst();
     }
 
     public Optional<Kunde> getKunde(String email) {

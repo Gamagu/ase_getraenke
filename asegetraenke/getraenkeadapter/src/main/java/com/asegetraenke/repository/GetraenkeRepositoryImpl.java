@@ -59,18 +59,16 @@ public class GetraenkeRepositoryImpl extends GetraenkeRepository {
         data.lieferungen.add(lieferung);
     }
 
-    public Produkt getProdukt(UUID id) {
+    public Optional<Produkt> getProdukt(UUID id) {
         return data.produkte.stream()
                 .filter(produkt -> produkt.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Produkt mit ID " + id + " existiert nicht"));
+                .findFirst();
     }
 
-    public Pfandwert getPfandwert(UUID id) {
+    public Optional<Pfandwert> getPfandwert(UUID id) {
         return data.pfandwerte.stream()
                 .filter(kunde -> kunde.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Pfandwert mit ID " + id + " existiert nicht"));
+                .findFirst();
     }
 
     public Bestellung getBestellungen(UUID id) {

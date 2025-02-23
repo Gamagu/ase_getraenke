@@ -13,7 +13,7 @@ public abstract class CustomerRepository {
 
     abstract public Optional<Kunde> getKunde(String email);
 
-    abstract public Zahlungsvorgang getZahlungsvorgang(UUID id);
+    abstract public Optional<Zahlungsvorgang> getZahlungsvorgang(UUID id);
 
     abstract public void addKunde(Kunde kunde);
 

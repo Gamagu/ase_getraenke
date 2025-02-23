@@ -67,7 +67,7 @@ public class GetraenkeUsecases {
                 .collect(Collectors.toList());
     }
 
-    public Pfandwert getPfandWert(UUID id) {
+    public Optional<Pfandwert> getPfandWert(UUID id) {
         return grepo.getPfandwert(id);
     }
 
@@ -111,7 +111,7 @@ public class GetraenkeUsecases {
     }
 
      public Optional<Produkt> getProduct(UUID produktId) throws Exception{
-        return Optional.of(grepo.getProdukt(produktId));
+        return grepo.getProdukt(produktId);
     }
 
      public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{

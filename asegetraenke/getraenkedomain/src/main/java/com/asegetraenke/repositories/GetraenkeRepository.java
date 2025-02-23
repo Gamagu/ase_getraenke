@@ -35,9 +35,9 @@ public abstract class GetraenkeRepository {
 
     abstract public void addLieferung(Lieferung lieferung);
 
-    abstract public Produkt getProdukt(UUID id);
+    abstract public Optional<Produkt> getProdukt(UUID id);
 
-    abstract public Pfandwert getPfandwert(UUID id);
+    abstract public Optional<Pfandwert> getPfandwert(UUID id);
 
     abstract public Optional<Bestellung> getBestellungen(Kunde kunde);
 
