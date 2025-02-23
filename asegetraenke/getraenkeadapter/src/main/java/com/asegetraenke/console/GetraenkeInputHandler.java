@@ -17,7 +17,7 @@ import com.asegetraenke.entities.Produkt;
 import com.asegetraenke.util.Triple;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
-import com.asegetraenke.getraenkeusecases;
+import com.asegetraenke.GetraenkeUsecases;
 import com.asegetraenke.kundeusecases;
 
 public class GetraenkeInputHandler {
@@ -26,10 +26,10 @@ public class GetraenkeInputHandler {
 
     private final Scanner scanner;
     private final Map<String,Runnable> getrankeCommandMap;
-    private final getraenkeusecases getraenkeusecases;
+    private final GetraenkeUsecases getraenkeusecases;
     private final kundeusecases kundeUseCases;
 
-    public GetraenkeInputHandler(Scanner sc, getraenkeusecases getraenkeusecases, kundeusecases kundeusecases){
+    public GetraenkeInputHandler(Scanner sc, GetraenkeUsecases getraenkeusecases, kundeusecases kundeusecases){
         this.scanner = sc;
         this.getrankeCommandMap = initializeCommandMapGetraenke();
         this.getraenkeusecases = getraenkeusecases;
@@ -294,7 +294,7 @@ public class GetraenkeInputHandler {
         LocalDateTime localDateTime = LocalDateTime.now();
         
         try {
-            getraenkeusecases.addZahlungsvorgang(kunde, zahlungsWeString, betrag, localDateTime);
+            kundeUseCases.addZahlungsvorgang(kunde, zahlungsWeString, betrag, localDateTime);
             System.out.println("Zahlungsvorgang wurde erfolgreich angelegt.");
         } catch (Exception e) {
             System.out.println("An Error Occurt while storing the : \n"+ 

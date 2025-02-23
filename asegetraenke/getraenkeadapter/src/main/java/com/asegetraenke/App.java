@@ -18,11 +18,11 @@ public class App {
         GetraenkeRepositoryImpl grepo = new GetraenkeRepositoryImpl(data);
         CustomerRepositoryImpl crepo = new CustomerRepositoryImpl(data);
 
-        //GetraenkeUsecases gusecases = new GetraenkeUsecases(grepo, crepo);
+        GetraenkeUsecases gusecases = new GetraenkeUsecases(grepo, crepo);
         kundeusecases cusecases = new kundeusecases(grepo, crepo);
 
         Scanner scanner = new Scanner(System.in); 
-        GetraenkeInputHandler gInputHandler = new GetraenkeInputHandler(scanner);
+        GetraenkeInputHandler gInputHandler = new GetraenkeInputHandler(scanner, gusecases, cusecases);
         KundenInputHandler kInputHandler = new KundenInputHandler(scanner, cusecases);
 
         ConsoleAdapter cAdapter = new ConsoleAdapter(kInputHandler, gInputHandler, cusecases, scanner);

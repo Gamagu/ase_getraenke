@@ -1,5 +1,6 @@
 package com.asegetraenke;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -55,5 +56,11 @@ public class kundeusecases {
 
     public Iterable<Bestellung> getAllBestellungen(Kunde kunde){
         return StreamSupport.stream(grepo.getBestellungen().spliterator(), false).filter(order -> order.getKunde().equals(kunde)).collect(Collectors.toList());
+    }
+
+    public Zahlungsvorgang addZahlungsvorgang(Kunde kunde, String zahlungsweg, double betrag, LocalDateTime date){
+        Zahlungsvorgang z = new Zahlungsvorgang(kunde, zahlungsweg, betrag, date);
+        crepo.addZahlungsVorgang(z);
+        return z;
     }
 }
