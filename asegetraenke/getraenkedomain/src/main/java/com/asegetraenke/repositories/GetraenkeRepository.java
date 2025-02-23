@@ -12,7 +12,7 @@ import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
 import com.asegetraenke.valueobjects.Preis.Priced;
 
-public abstract class GetraenkeRepository {
+public abstract interface GetraenkeRepository {
     abstract public Iterable<Produkt> getProdukte();
 
     abstract public Iterable<Pfandwert> getPfandwerte();
