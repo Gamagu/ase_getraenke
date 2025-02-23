@@ -18,7 +18,7 @@ import com.asegetraenke.util.Triple;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
 import com.asegetraenke.GetraenkeUsecases;
-import com.asegetraenke.kundeusecases;
+import com.asegetraenke.KundeUsecases;
 
 public class GetraenkeInputHandler {
     private final String NOPRODUKTMESSAGE = "There are no Product/s found";
@@ -27,9 +27,9 @@ public class GetraenkeInputHandler {
     private final Scanner scanner;
     private final Map<String,Runnable> getrankeCommandMap;
     private final GetraenkeUsecases getraenkeusecases;
-    private final kundeusecases kundeUseCases;
+    private final KundeUsecases kundeUseCases;
 
-    public GetraenkeInputHandler(Scanner sc, GetraenkeUsecases getraenkeusecases, kundeusecases kundeusecases){
+    public GetraenkeInputHandler(Scanner sc, GetraenkeUsecases getraenkeusecases, KundeUsecases kundeusecases){
         this.scanner = sc;
         this.getrankeCommandMap = initializeCommandMapGetraenke();
         this.getraenkeusecases = getraenkeusecases;
