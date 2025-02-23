@@ -20,7 +20,7 @@ public class RepositoryData {
     public final List<Preis> preise;
     public final List<Lieferung> lieferungen;
 
-    RepositoryData(){
+    public RepositoryData(){
         kunden = new ArrayList<>();
         produkte = new ArrayList<>();
         pfandwerte = new ArrayList<>();

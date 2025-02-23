@@ -12,7 +12,7 @@ import com.asegetraenke.repositories.CustomerRepository;
 public class CustomerRepositoryImpl extends CustomerRepository {
     private final RepositoryData data;
 
-    CustomerRepositoryImpl(RepositoryData data) {
+    public CustomerRepositoryImpl(RepositoryData data) {
         this.data = data;
     }
 

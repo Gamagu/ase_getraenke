@@ -11,7 +11,7 @@ import com.asegetraenke.repositories.CustomerRepository;
 import com.asegetraenke.repositories.GetraenkeRepository;
 
 
-public abstract class kundeusecases {
+public class kundeusecases {
     final private GetraenkeRepository grepo;
     final private CustomerRepository crepo;
     public kundeusecases(GetraenkeRepository grepo, CustomerRepository crepo){

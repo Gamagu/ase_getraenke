@@ -19,7 +19,7 @@ import java.util.Collections;
 public class GetraenkeRepositoryImpl extends GetraenkeRepository {
     private final RepositoryData data;
 
-    GetraenkeRepositoryImpl(RepositoryData data) {
+    public GetraenkeRepositoryImpl(RepositoryData data) {
         this.data = data;
     }
 
