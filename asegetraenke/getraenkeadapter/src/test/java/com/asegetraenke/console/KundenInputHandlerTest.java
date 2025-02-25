@@ -15,12 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.asegetraenke.kundeusecases;
+import com.asegetraenke.KundenUsecases;
 import com.asegetraenke.entities.Kunde;
 
 public class KundenInputHandlerTest {
     @Mock
-    private kundeusecases mockedKundeusecases;
+    private KundenUsecases mockedKundeusecases;
     @Mock
     private ConsoleUtils mockedconsoleUtils;
 

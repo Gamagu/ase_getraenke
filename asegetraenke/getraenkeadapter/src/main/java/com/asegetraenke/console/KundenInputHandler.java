@@ -7,16 +7,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.asegetraenke.kundeusecases;
+import com.asegetraenke.KundenUsecases;
 import com.asegetraenke.entities.Bestellung;
 import com.asegetraenke.entities.Kunde;
 
 public class KundenInputHandler {
     private final Map<String, Runnable> kundeCommandMap;
-    private final kundeusecases kundeUseCases;
+    private final KundenUsecases kundeUseCases;
     private final ConsoleUtils consoleUtils;
     
-    public KundenInputHandler(kundeusecases kundeUseCases, ConsoleUtils consoleUtils) {
+    public KundenInputHandler(KundenUsecases kundeUseCases, ConsoleUtils consoleUtils) {
         this.kundeCommandMap = initializeCommandMapKunde();
         this.kundeUseCases = kundeUseCases;
         this.consoleUtils = consoleUtils;

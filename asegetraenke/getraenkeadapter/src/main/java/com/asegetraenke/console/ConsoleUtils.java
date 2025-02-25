@@ -7,8 +7,8 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.asegetraenke.getraenkeusecases;
-import com.asegetraenke.kundeusecases;
+import com.asegetraenke.GetraenkeUsecases;
+import com.asegetraenke.KundenUsecases;
 import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Produkt;
 import com.asegetraenke.valueobjects.Pfandwert;
@@ -19,10 +19,10 @@ public class ConsoleUtils {
     private final String NOKUNDEMESSAGE = "There are no Customer/s found";
 
     private final Scanner scanner;
-    private final getraenkeusecases getraenkeUseCases;
-    private final kundeusecases kundeUseCases;
+    private final GetraenkeUsecases getraenkeUseCases;
+    private final KundenUsecases kundeUseCases;
 
-    public ConsoleUtils(Scanner scanner, getraenkeusecases getraenkeUseCases, kundeusecases kundeUseCases) {
+    public ConsoleUtils(Scanner scanner, GetraenkeUsecases getraenkeUseCases, KundenUsecases kundeUseCases) {
         this.scanner = scanner;
         this.getraenkeUseCases = getraenkeUseCases;
         this.kundeUseCases = kundeUseCases;

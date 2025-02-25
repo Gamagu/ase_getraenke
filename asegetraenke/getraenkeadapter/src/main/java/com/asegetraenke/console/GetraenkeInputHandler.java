@@ -16,17 +16,20 @@ import com.asegetraenke.entities.Produkt;
 import com.asegetraenke.util.Triple;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
-import com.asegetraenke.getraenkeusecases;
+import com.asegetraenke.GetraenkeUsecases;
+import com.asegetraenke.KundenUsecases;
 
 public class GetraenkeInputHandler {
     private final Map<String,Runnable> getrankeCommandMap;
-    private final getraenkeusecases getraenkeusecases;
+    private final GetraenkeUsecases getraenkeusecases;
+    private final KundenUsecases kundenUsecases;
     private final ConsoleUtils consoleUtils;
 
-    public GetraenkeInputHandler(getraenkeusecases getraenkeusecases, ConsoleUtils consoleUtils){
+    public GetraenkeInputHandler(GetraenkeUsecases getraenkeusecases, KundenUsecases kundenUsecases, ConsoleUtils consoleUtils){
         this.getrankeCommandMap = initializeCommandMapGetraenke();
         this.getraenkeusecases = getraenkeusecases;
         this.consoleUtils = consoleUtils;
+        this.kundenUsecases = kundenUsecases;
     }
 
     private Map<String, Runnable> initializeCommandMapGetraenke() {
@@ -135,8 +138,12 @@ public class GetraenkeInputHandler {
     public void handleGetPfandWertInput() {
         String uuidString = consoleUtils.readStringInputWithPrompt("UUID of Pfandwert: ");
         UUID uuid = UUID.fromString(uuidString);
-        Pfandwert pfandwert = getraenkeusecases.getPfandWert(uuid);
-        consoleUtils.printPfandwertWithNumber(pfandwert, 1);
+        Optional<Pfandwert> pfandwert = getraenkeusecases.getPfandWert(uuid);
+        if(pfandwert.isEmpty()){
+            consoleUtils.errorNoPfandWert();
+            return;
+        }
+        consoleUtils.printPfandwertWithNumber(pfandwert.get(), 1);
     }
     
     public void handleGetAllProductsInput() {
@@ -286,7 +293,7 @@ public class GetraenkeInputHandler {
         LocalDateTime localDateTime = LocalDateTime.now();
         
         try {
-            getraenkeusecases.addZahlungsvorgang(kunde, zahlungsWeString, betrag, localDateTime);
+            kundenUsecases.addZahlungsvorgang(kunde, zahlungsWeString, betrag, localDateTime);
             System.out.println("Zahlungsvorgang wurde erfolgreich angelegt.");
         } catch (Exception e) {
             System.out.println("An Error Occurt while storing the : \n"+ 

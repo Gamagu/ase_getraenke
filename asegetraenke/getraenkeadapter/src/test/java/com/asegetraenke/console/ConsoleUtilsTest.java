@@ -23,16 +23,16 @@ import org.mockito.MockitoAnnotations;
 import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Produkt;
 import com.asegetraenke.valueobjects.Pfandwert;
-import com.asegetraenke.getraenkeusecases;
-import com.asegetraenke.kundeusecases;
+import com.asegetraenke.GetraenkeUsecases;
+import com.asegetraenke.KundenUsecases;
 
 public class ConsoleUtilsTest {
 
     @Mock
-    private getraenkeusecases mockedGetraenkeUseCases;
+    private GetraenkeUsecases mockedGetraenkeUseCases;
 
     @Mock 
-    private kundeusecases mockedKundeUseCases;
+    private KundenUsecases mockedKundeUseCases;
 
     private ConsoleUtils consoleUtils;
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
