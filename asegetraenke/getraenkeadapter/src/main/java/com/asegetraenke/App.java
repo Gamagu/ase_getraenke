@@ -3,6 +3,7 @@ package com.asegetraenke;
 import java.util.Scanner;
 
 import com.asegetraenke.console.ConsoleAdapter;
+import com.asegetraenke.console.ConsoleUtils;
 import com.asegetraenke.console.GetraenkeInputHandler;
 import com.asegetraenke.console.KundenInputHandler;
 import com.asegetraenke.repository.CustomerRepositoryImpl;
@@ -20,10 +21,12 @@ public class App {
 
         GetraenkeUsecases gusecases = new GetraenkeUsecases(grepo, crepo);
         KundenUsecases cusecases = new KundenUsecases(grepo, crepo);
+        
 
         Scanner scanner = new Scanner(System.in); 
-        GetraenkeInputHandler gInputHandler = new GetraenkeInputHandler(scanner, gusecases, cusecases);
-        KundenInputHandler kInputHandler = new KundenInputHandler(scanner, cusecases);
+        ConsoleUtils consoleUtils = new ConsoleUtils(scanner, gusecases, cusecases);
+        GetraenkeInputHandler gInputHandler = new GetraenkeInputHandler(gusecases,cusecases,consoleUtils);
+        KundenInputHandler kInputHandler = new KundenInputHandler(cusecases,consoleUtils);
 
         ConsoleAdapter cAdapter = new ConsoleAdapter(kInputHandler, gInputHandler, cusecases, scanner);
 
