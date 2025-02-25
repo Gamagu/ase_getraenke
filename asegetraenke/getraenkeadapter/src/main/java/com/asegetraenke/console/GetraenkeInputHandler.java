@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -18,22 +17,16 @@ import com.asegetraenke.util.Triple;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
 import com.asegetraenke.getraenkeusecases;
-import com.asegetraenke.kundeusecases;
 
 public class GetraenkeInputHandler {
-    private final String NOPRODUKTMESSAGE = "There are no Product/s found";
-    private final String NOPFANDWERTMESSAGE = "There are no Pfandwert/s found";
-
-    private final Scanner scanner;
     private final Map<String,Runnable> getrankeCommandMap;
     private final getraenkeusecases getraenkeusecases;
-    private final kundeusecases kundeUseCases;
+    private final ConsoleUtils consoleUtils;
 
-    public GetraenkeInputHandler(Scanner sc, getraenkeusecases getraenkeusecases, kundeusecases kundeusecases){
-        this.scanner = sc;
+    public GetraenkeInputHandler(getraenkeusecases getraenkeusecases, ConsoleUtils consoleUtils){
         this.getrankeCommandMap = initializeCommandMapGetraenke();
         this.getraenkeusecases = getraenkeusecases;
-        this.kundeUseCases = kundeusecases;
+        this.consoleUtils = consoleUtils;
     }
 
     private Map<String, Runnable> initializeCommandMapGetraenke() {
@@ -56,16 +49,16 @@ public class GetraenkeInputHandler {
         return map;
     }
 
-    //TODO Ask Nikales what he was thinking here 
+    //TODO Ask Nikals what he was thinking here 
     public void handleAcceptLieferungInput() {
-        
+
     }
 
     public void handleAddPfandWertInput() {
         System.out.println("Add new Pfand value to existing");
-        String description = readStringInputWithPrompt("Description: ");
-        Double value = readDoubleInputWithPrompt("Value: ");
-        if(!acceptInput()){
+        String description = consoleUtils.readStringInputWithPrompt("Description: ");
+        Double value = consoleUtils.readDoubleInputWithPrompt("Value: ");
+        if(!consoleUtils.acceptInput()){
             return;
         }
         try {
@@ -79,14 +72,14 @@ public class GetraenkeInputHandler {
     }
 
     public void handleSetPfandwertInput() {
-        Optional<Pfandwert> pfandwerOptional = pickOnePfandwertFromAllPfandwerts();
+        Optional<Pfandwert> pfandwerOptional = consoleUtils.pickOnePfandwertFromAllPfandwerts();
         if(pfandwerOptional.isEmpty()){
-            errorNoPfandWert();
+            consoleUtils.errorNoPfandWert();
             return;
         }
         Pfandwert pfandwert = pfandwerOptional.get();
-        double newValue = readDoubleInputWithPrompt("New Value for Pfandwert: ");
-        if(!acceptInput()){
+        double newValue = consoleUtils.readDoubleInputWithPrompt("New Value for Pfandwert: ");
+        if(!consoleUtils.acceptInput()){
             return;
         }
         try {
@@ -100,16 +93,16 @@ public class GetraenkeInputHandler {
     }
     
     public void handleSetPfandwertProduktInput() {
-        Optional<Pfandwert> pfandwertOptional = pickOnePfandwertFromAllPfandwerts();
+        Optional<Pfandwert> pfandwertOptional = consoleUtils.pickOnePfandwertFromAllPfandwerts();
         if (pfandwertOptional.isEmpty()) {
-            errorNoPfandWert();
+            consoleUtils.errorNoPfandWert();
             return;
         }
         Pfandwert pfandwert = pfandwertOptional.get();
 
-        Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
+        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
-            errorNoProdukt();
+            consoleUtils.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -129,21 +122,21 @@ public class GetraenkeInputHandler {
         List<Pfandwert> pfandwertList = StreamSupport.stream(pfandwertVec.spliterator(), false)
                                     .collect(Collectors.toList());
         if(pfandwertList.isEmpty()){
-            errorNoProdukt();
+            consoleUtils.errorNoProdukt();
             return;
         }
         int count = 1;
         for(Pfandwert pfandwert : pfandwertList){
-            printPfandwertWithNumber(pfandwert, count);
+            consoleUtils.printPfandwertWithNumber(pfandwert, count);
             count++;
         }
     }
     
     public void handleGetPfandWertInput() {
-        String uuidString = readStringInputWithPrompt("UUID of Pfandwert: ");
+        String uuidString = consoleUtils.readStringInputWithPrompt("UUID of Pfandwert: ");
         UUID uuid = UUID.fromString(uuidString);
         Pfandwert pfandwert = getraenkeusecases.getPfandWert(uuid);
-        printPfandwertWithNumber(pfandwert, 1);
+        consoleUtils.printPfandwertWithNumber(pfandwert, 1);
     }
     
     public void handleGetAllProductsInput() {
@@ -151,20 +144,20 @@ public class GetraenkeInputHandler {
         List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
                                     .collect(Collectors.toList());
         if(productList.isEmpty()){
-            errorNoProdukt();
+            consoleUtils.errorNoProdukt();
             return;
         }
         int count = 1;
         for(Produkt produkt : productList){
-            printProduktWithNumber(produkt, count);
+            consoleUtils.printProduktWithNumber(produkt, count);
             count++;
         }
     }
     
     public void handleGetPriceForProduktInput() {
-        Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
+        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
-            errorNoProdukt();
+            consoleUtils.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -174,9 +167,9 @@ public class GetraenkeInputHandler {
     }
     
     public void handleGetPriceHistoryForProduktInput() {
-        Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
+        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
-            errorNoProdukt();
+            consoleUtils.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -189,23 +182,23 @@ public class GetraenkeInputHandler {
     }
     
     public void handleSetPriceForProduktInput() {
-        Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
+        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
-            errorNoProdukt();
+            consoleUtils.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
-        int newPrice = readIntInputWithPrompt("Input new price for product: ");
-        if(!acceptInput()){
+        int newPrice = consoleUtils.readIntInputWithPrompt("Input new price for product: ");
+        if(!consoleUtils.acceptInput()){
             return;
         }
         getraenkeusecases.setPriceForProdukt(produkt, newPrice);
     }
 
     public void handleGetStockAmountForProduktInput() {
-        Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
+        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
-            errorNoProdukt();
+            consoleUtils.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -215,12 +208,12 @@ public class GetraenkeInputHandler {
     
     public void handleAddProduktInput() {
         System.out.println("Add Product to existing Products");
-        String name = readStringInputWithPrompt("Name: ");
-        String beschreibung = readStringInputWithPrompt("Describtion: ");
-        String kategorie = readStringInputWithPrompt("Categorie: ");
-        int price = readIntInputWithPrompt("Price: ");
+        String name = consoleUtils.readStringInputWithPrompt("Name: ");
+        String beschreibung = consoleUtils.readStringInputWithPrompt("Describtion: ");
+        String kategorie = consoleUtils.readStringInputWithPrompt("Categorie: ");
+        int price = consoleUtils.readIntInputWithPrompt("Price: ");
 
-        if(!acceptInput()){
+        if(!consoleUtils.acceptInput()){
             return;
         }
         try {
@@ -233,12 +226,12 @@ public class GetraenkeInputHandler {
     }
     
     public void handleGetProductInput() {
-        String uuidString = readStringInputWithPrompt("UUID for product: ");
+        String uuidString = consoleUtils.readStringInputWithPrompt("UUID for product: ");
         UUID uuid = UUID.fromString(uuidString);
         try {
             Optional<Produkt> produkt = getraenkeusecases.getProduct(uuid);    
             if(produkt.isEmpty()){
-                errorNoProdukt();
+                consoleUtils.errorNoProdukt();
                 return;
             }
             System.out.println(produkt.toString());
@@ -249,21 +242,21 @@ public class GetraenkeInputHandler {
     }
 
     public void handleAddBestellungInput() {
-        Optional<Kunde> kundeOptional = pickOneUserFromAllUsers();
+        Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
         if(kundeOptional.isEmpty()){
-            errorNoKunden();
+            consoleUtils.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
-        int amountProdukts = readIntInputWithPrompt("How many Products do you want to add: ");
+        int amountProdukts = consoleUtils.readIntInputWithPrompt("How many Products do you want to add: ");
         List<Triple<Produkt, Integer, Double>> bestellungsList = new ArrayList<>();
         for(int i = 0; i < amountProdukts; i++){
             while(true){
                 try {
                     System.out.println("Produkt number :"+ (i+1));
-                    Optional<Produkt> produktOptional = pickOneProductFromAllProducts();
-                    int amount = readIntInputWithPrompt("Wie viele Produkte: ");
-                    Double value = readDoubleInputWithPrompt("Wie viel kostetet das einzelne Produkt: ");
+                    Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
+                    int amount = consoleUtils.readIntInputWithPrompt("Wie viele Produkte: ");
+                    Double value = consoleUtils.readDoubleInputWithPrompt("Wie viel kostetet das Produkt: ");
                     bestellungsList.add(new Triple<Produkt,Integer,Double>(produktOptional.get(), amount, value));
                     break;
                 } catch (Exception e) {
@@ -282,14 +275,14 @@ public class GetraenkeInputHandler {
     }
 
     public void handleAddZahlungsvorgangInput() {
-        Optional<Kunde> kundeOptional = pickOneUserFromAllUsers();
+        Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
         if(kundeOptional.isEmpty()){
-            errorNoKunden();
+            consoleUtils.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
-        String zahlungsWeString = readStringInputWithPrompt("Zahlungsweg: ");
-        Double betrag = readDoubleInputWithPrompt("Betrag: ");
+        String zahlungsWeString = consoleUtils.readStringInputWithPrompt("Zahlungsweg: ");
+        Double betrag = consoleUtils.readDoubleInputWithPrompt("Betrag: ");
         LocalDateTime localDateTime = LocalDateTime.now();
         
         try {
@@ -307,146 +300,5 @@ public class GetraenkeInputHandler {
 
     public Map<String,Runnable> getGetrankeCommandMap() {
         return this.getrankeCommandMap;
-    }
-
-    private Optional<Produkt> pickOneProductFromAllProducts() {
-        Iterable<Produkt> productVec = getraenkeusecases.getAllProducts();
-        List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
-                                    .collect(Collectors.toList());
-        if(productList.isEmpty()){
-            return Optional.empty();
-        }
-
-        int count = 1;
-        for(Produkt product : productList) {
-            printProduktWithNumber(product, count);
-        }
-        int indexProdukt = 0;
-        while (true) {
-            indexProdukt = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
-            if(indexProdukt < productList.size()+1 && indexProdukt > 0){
-                break;
-            }
-            System.out.println("Something went wrong the "+ indexProdukt +  " is not in the list");
-        }
-        Produkt produkt = productList.get(indexProdukt-1);
-        System.out.println("Chosen Produkt: "+ produkt.toString());
-        return Optional.of(productList.get(indexProdukt-1));
-    }
-
-    private Optional<Pfandwert> pickOnePfandwertFromAllPfandwerts() {
-        Iterable<Pfandwert> pfandwertVec = getraenkeusecases.getAllPfandwerte();
-        List<Pfandwert> pfandwertList = StreamSupport.stream(pfandwertVec.spliterator(), false)
-                                    .collect(Collectors.toList());
-        if(pfandwertList.isEmpty()){
-            return Optional.empty();
-        }
-
-        int count = 1;
-        for(Pfandwert pfandwert : pfandwertList) {
-            printPfandwertWithNumber(pfandwert, count);
-        }
-        int indexProdukt = 0;
-        while (true) {
-            indexProdukt = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
-            if(indexProdukt < pfandwertList.size()+1 && indexProdukt > 0){
-                break;
-            }
-            System.out.println("Something went wrong the "+ indexProdukt +  " is not in the list");
-        }
-        Pfandwert pfandwert = pfandwertList.get(indexProdukt-1);
-        System.out.println("Chosen Produkt: "+ pfandwert.toString());
-        return Optional.of(pfandwertList.get(indexProdukt-1));
-    }
-
-    private Optional<Kunde> pickOneUserFromAllUsers(){
-        Iterable<Kunde> kundenOptVec = this.kundeUseCases.getAllKunden();
-        List<Kunde> kundenList = new ArrayList<Kunde>();
-        kundenList = StreamSupport.stream(kundenOptVec.spliterator(), false).collect(Collectors.toList());
-        int count = 1;
-        for(Kunde kunde : kundenList) {
-            printKundeWithNumber(kunde, count);
-            kundenList.add(kunde);
-            
-        }
-        int indexCustomer = 0;
-        while (true) {
-            indexCustomer = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
-            if(indexCustomer < count && indexCustomer > 0){
-                break;
-            }
-            System.out.println("Something went wrong the "+ indexCustomer +  " is not in the list");
-        }
-        return Optional.of(kundenList.get(indexCustomer-1));
-    }
-    
-    private void printProduktWithNumber(Produkt produkt, int number){
-        System.out.println(number + ". "+ produkt.toString());
-    }
-
-    private void printPfandwertWithNumber(Pfandwert pfandwert, int number){
-        System.out.println(number + ". "+ pfandwert.toString());
-    }
-
-    private void printKundeWithNumber(Kunde kunde, int number){
-        System.out.println(number + ". "+ kunde.toString());
-    } 
-
-    private int readIntInputWithPrompt(String prompt){
-        System.out.print(prompt);
-        while(true){
-            String input = this.scanner.nextLine();
-            try{
-                int inputCastInt = Integer.parseInt(input);
-                return inputCastInt;
-            }catch(Exception e){
-                System.out.println("The input: "+ input+ " can not be translated into a number");
-            }
-        }
-    }
-
-    private Double readDoubleInputWithPrompt(String prompt){
-        System.out.print(prompt);
-        while(true){
-            String input = this.scanner.nextLine();
-            try{
-                double inputCastInt = Double.parseDouble(input);
-                return inputCastInt;
-            }catch(Exception e){
-                System.out.println("The input: "+ input+ " can not be translated into a number");
-            }
-        }
-    }
-
-    private String readStringInputWithPrompt(String ptompString){
-        System.out.print(ptompString);
-        return this.scanner.nextLine();
-    }
-
-    private void errorNoProdukt() {
-        System.out.println(NOPRODUKTMESSAGE);
-    }
-
-    private Boolean acceptInput(){
-        while(true){
-            System.out.print("Finish process yes[y] / no[n]");
-            String input = this.scanner.nextLine();
-            input = input.toLowerCase();
-            if(input.equals("y")){
-                return true;
-            }
-            if(input.equals("n")){
-                System.out.println("Process was aborted");
-                return false;
-            }
-        }
-    }
-
-    private void errorNoPfandWert() {
-        System.out.println(NOPFANDWERTMESSAGE);
-    }
- 
-    private void errorNoKunden() {
-        System.out.println("There are no Customer/s found");
     }
 }
