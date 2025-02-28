@@ -142,7 +142,7 @@ public class GetraenkeInputHandler {
     public void handleGetPfandWertInput() {
         String uuidString = readStringInputWithPrompt("UUID of Pfandwert: ");
         UUID uuid = UUID.fromString(uuidString);
-        Pfandwert pfandwert = getraenkeusecases.getPfandWert(uuid);
+        Pfandwert pfandwert = getraenkeusecases.getPfandWert(uuid).get();
         printPfandwertWithNumber(pfandwert, 1);
     }
     
