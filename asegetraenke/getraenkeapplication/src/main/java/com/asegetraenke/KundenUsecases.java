@@ -41,11 +41,11 @@ public class KundenUsecases {
         return getKundenOrderSum(kunde) - getKundenZahlungenSum(kunde);
     }   
 
-    private double getKundenOrderSum(Kunde kunde){
+    public double getKundenOrderSum(Kunde kunde){
         return StreamSupport.stream(getAllBestellungen(kunde).spliterator(), false).map(order -> order.getSumOfOrder()).mapToDouble(order -> order).sum();
     }
 
-    private double getKundenZahlungenSum(Kunde kunde){
+    public double getKundenZahlungenSum(Kunde kunde){
         return StreamSupport.stream(getAllBestellungen(kunde).spliterator(), false).map(order -> order.getSumOfOrder()).mapToDouble(order -> order).sum();
     }
 

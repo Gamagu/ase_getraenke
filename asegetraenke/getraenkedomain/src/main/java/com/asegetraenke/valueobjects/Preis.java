@@ -28,6 +28,10 @@ public final class Preis {
         return preis;
     }
 
+    public LocalDateTime getCreationDate(){
+        return this.time;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if(obj instanceof Preis){
