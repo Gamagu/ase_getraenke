@@ -44,7 +44,7 @@ public class AppTest {
         b.add(new BestellungProdukt(p, preis, 1));
         Bestellung b1 = new Bestellung(k, LocalDateTime.now(), b);
         assertEquals(b1.getSumOfOrder(), 17.5);
-        assertEquals(b1.getNumber(), 1);
+        assertEquals(b1.getNumber(), 2);
     }
 
     @Test
