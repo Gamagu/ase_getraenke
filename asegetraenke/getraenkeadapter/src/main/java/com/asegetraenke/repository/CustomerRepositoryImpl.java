@@ -8,7 +8,7 @@ import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Zahlungsvorgang;
 import com.asegetraenke.repositories.CustomerRepository;
 
-public class CustomerRepositoryImpl extends CustomerRepository {
+public class CustomerRepositoryImpl implements CustomerRepository {
     private final RepositoryData data;
 
     public CustomerRepositoryImpl(RepositoryData data) {

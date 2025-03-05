@@ -32,6 +32,10 @@ public class Bestellung extends EntityWrapper<Bestellung>{
         return kunde;
     }
 
+    public int getNumber(){
+        return number;
+    }
+
     public double getSumOfOrder(){
         double sum = 0;
         for (BestellungProdukt b : produkte){

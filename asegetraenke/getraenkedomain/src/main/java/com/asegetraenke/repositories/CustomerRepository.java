@@ -6,7 +6,7 @@ import java.util.UUID;
 import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Zahlungsvorgang;
 
-public abstract class CustomerRepository {
+public abstract interface CustomerRepository {
     public abstract Iterable<Kunde> getKunden();
 
     abstract public Optional<Kunde> getKunde(UUID id);

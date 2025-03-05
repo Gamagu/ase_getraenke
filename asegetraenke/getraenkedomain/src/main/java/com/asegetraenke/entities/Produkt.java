@@ -20,6 +20,7 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
         this.kategorie = kategory;
         this.beschreibung = beschreibung;
         this.name = name;
+        pfand = new ArrayList<>();
     }
 
     public Preis getCurrentPreis(){

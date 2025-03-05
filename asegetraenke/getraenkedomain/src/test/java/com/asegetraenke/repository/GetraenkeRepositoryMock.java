@@ -8,6 +8,8 @@ import com.asegetraenke.entities.Bestellung;
 import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Lieferung;
 import com.asegetraenke.entities.Produkt;
+import com.asegetraenke.entities.Zahlungsvorgang;
+import com.asegetraenke.repositories.CustomerRepository;
 import com.asegetraenke.repositories.GetraenkeRepository;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
@@ -16,11 +18,19 @@ import com.asegetraenke.valueobjects.Preis.Priced;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-public class GetraenkeRepositoryImpl implements GetraenkeRepository {
+public class GetraenkeRepositoryMock implements GetraenkeRepository, CustomerRepository {
     private final RepositoryData data;
+    static  GetraenkeRepositoryMock instance;
 
-    public GetraenkeRepositoryImpl(RepositoryData data) {
+    public static GetraenkeRepositoryMock getGetraenkeMockRepo() {
+        return instance;
+    }
+
+    public GetraenkeRepositoryMock(RepositoryData data) {
         this.data = data;
+        if (instance == null) {
+            instance = this;
+        }
     }
 
     public Iterable<Produkt> getProdukte() {
@@ -70,13 +80,12 @@ public class GetraenkeRepositoryImpl implements GetraenkeRepository {
                 .filter(kunde -> kunde.getId().equals(id))
                 .findFirst();
     }
-
-    public Bestellung getBestellungen(UUID id) {
-        return data.bestellungen.stream()
-                .filter(bestellung -> bestellung.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Bestellungen mit ID " + id + " existiert nicht"));
-    }
+    // @Override
+    // public Optional<Bestellung> getBestellungen(UUID id) {
+    //     return data.bestellungen.stream()
+    //             .filter(bestellung -> bestellung.getId().equals(id))
+    //             .findFirst();
+    // }
 
     public Iterable<Preis> getPreisForProdukt(Produkt produkt) {
         return data.preise.stream().filter(preis -> preis.getParentObject() == produkt).toList();
@@ -115,5 +124,38 @@ public class GetraenkeRepositoryImpl implements GetraenkeRepository {
         return data.bestellungen.stream()
                 .filter(bestellung -> bestellung.getKunde().equals(kunde))
                 .findFirst();
+    }
+
+    public Iterable<Kunde> getKunden() {
+
+        return Collections.unmodifiableList(data.kunden);
+    };
+
+    public Iterable<Zahlungsvorgang> getZahlungsvorgaenge() {
+        return Collections.unmodifiableList(data.zahlungsvorgaenge);
+    }
+
+    public void addKunde(Kunde kunde) {
+        data.kunden.add(kunde);
+    }
+
+    public Optional<Kunde> getKunde(UUID id) {
+        return data.kunden.stream()
+                .filter(kunde -> kunde.getId().equals(id))
+                .findFirst();
+    }
+
+    public Optional<Zahlungsvorgang> getZahlungsvorgang(UUID id) {
+        return data.zahlungsvorgaenge.stream()
+                .filter(zahlungsvorgang -> zahlungsvorgang.getId().equals(id))
+                .findFirst();
+    }
+
+    public Optional<Kunde> getKunde(String email) {
+        return data.kunden.stream().filter(kunde -> kunde.getMail().equals(email)).findFirst();
+    }
+
+    public void addZahlungsVorgang(Zahlungsvorgang zahlungsvorgang) {
+        data.zahlungsvorgaenge.add(zahlungsvorgang);
     }
 }
