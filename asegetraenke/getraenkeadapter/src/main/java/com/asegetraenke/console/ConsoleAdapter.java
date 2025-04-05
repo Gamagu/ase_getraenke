@@ -4,18 +4,16 @@ import java.util.Map;
 import java.util.Scanner;
 
 import com.asegetraenke.KundenUsecases;
+import com.asegetraenke.console.consolefunktionmapping.CommandEnum;
+import com.asegetraenke.console.consolefunktionmapping.GetraenkeCommand;
+import com.asegetraenke.console.consolefunktionmapping.KundenCommand;
 
 public class ConsoleAdapter {
 
-    private final String KUNDENCOMMAND = "kunde";
-    private final String GETREANKECOMMAND = "getraenke";
-    private final String HELPCOMMAND = "help";
-    private final String WELCOMEMESSAGE = "TODO add welcome with short explaination";
+    private final String WELCOMEMESSAGE = "Welcome to the Geatrenkehandler";
 
     private final Scanner scanner;
     private final boolean isRunning;
-    private final Map<String, Runnable> getraenkeCommandMap;
-    private final Map<String, Runnable> kundeCommandMap;
     private final GetraenkeInputHandler getraenkeInputHandler;
     private final KundenInputHandler kundenInputHandler;
     
@@ -29,55 +27,40 @@ public class ConsoleAdapter {
         this.isRunning = true;
         this.getraenkeInputHandler = getraenkeInputHandler;
         this.kundenInputHandler = kundenInputHandler;
-        this.getraenkeCommandMap = this.getraenkeInputHandler.getGetrankeCommandMap();
-        this.kundeCommandMap = this.kundenInputHandler.getKundeCommandMap();
     }
 
     public void start() {
         System.out.println(WELCOMEMESSAGE);
-        printGetraenkeOptionTopLevel();
-        printKundenOptionTopLevel();
-        Map <String,Runnable> commandMap = null;
-        while(isRunning) {
-            commandMap = null;
+        printAllCommands();
+        while (isRunning) {
             String[] option = handleInput();
-            
-            if(option == null) {
-                continue;
-            }
+            if (option == null || option.length < 1) continue;
 
-            if(option[0].equals(HELPCOMMAND)) {
-                printGetraenkeOptionTopLevel();
-                printKundenOptionTopLevel();
-                continue;
-            }
-            
-            if (option.length < 2 ) {
-                System.out.println( "The second command is missing");
-                continue;
-            }
+            CommandEnum.fromString(option[0]).ifPresentOrElse(domain -> {
+                if (domain == CommandEnum.HELP) {
+                    printAllCommands();
+                    return;
+                }
 
-            
-            if(option[0].equals(KUNDENCOMMAND)) {
-                commandMap = this.kundeCommandMap;
-            }
+                if (option.length < 2) {
+                    System.out.println("The second command is missing");
+                    return;
+                }
 
-            if(option[0].equals(GETREANKECOMMAND)) {
-                commandMap = this.getraenkeCommandMap;
-            }
+                String subcommand = option[1];
 
-            if(commandMap == null) {
-                System.out.println("The first command is unknown. Use help for all options");
-                continue;
-            }
+                switch (domain) {
+                    case GETRAENKE -> GetraenkeCommand.fromString(subcommand)
+                        .ifPresentOrElse(cmd -> {
+                            cmd.execute(getraenkeInputHandler);
+                        }, () -> System.out.println(subcommand + " is not a valid Getränke-Command."));
+                    case KUNDE -> KundenCommand.fromString(subcommand)
+                        .ifPresentOrElse(cmd -> cmd.execute(kundenInputHandler), 
+                            () -> System.out.println(subcommand + " is not a valid Kunden-Command."));
+                    default -> System.out.println("Unknown command category.");
+                }
 
-            Runnable action = commandMap.get(option[1]);
-            if (action == null) {
-                System.out.println(option + " is not a viable option, please refer to the possible options: \n");
-                printGetraenkeOptionTopLevel();
-                continue;
-            }
-            action.run();
+            }, () -> System.out.println("The first command is unknown. Use help for all options."));
         }
     }
     private String[] handleInput() {
@@ -94,15 +77,15 @@ public class ConsoleAdapter {
         return optionList;
     }
 
-    private void printGetraenkeOptionTopLevel() {
-        for (String command : getraenkeCommandMap.keySet()) {
-            System.out.println(GETREANKECOMMAND+ " " + command);
+    private void printAllCommands() {
+        for (GetraenkeCommand getraenkeCommand : GetraenkeCommand.values()) {
+            System.out.println("getraenke " + getraenkeCommand.getName());
+        }
+    
+        for (KundenCommand kundenCommand : KundenCommand.values()) {
+            System.out.println("kunde " + kundenCommand.getName());
         }
     }
     
-    private void printKundenOptionTopLevel() {
-        for (String command : kundeCommandMap.keySet()) {
-            System.out.println(KUNDENCOMMAND + " " + command);
-        }
-    }
+    
 }
