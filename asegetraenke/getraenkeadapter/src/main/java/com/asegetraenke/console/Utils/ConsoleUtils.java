@@ -1,4 +1,4 @@
-package com.asegetraenke.console;
+package com.asegetraenke.console.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,22 +7,22 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.asegetraenke.GetraenkeUsecases;
-import com.asegetraenke.KundenUsecases;
+import com.asegetraenke.IGetraenkeUsecases;
+import com.asegetraenke.IKundenUsecases;
 import com.asegetraenke.entities.Kunde;
 import com.asegetraenke.entities.Produkt;
 import com.asegetraenke.valueobjects.Pfandwert;
 
-public class ConsoleUtils {
+public class ConsoleUtils implements IConsoleUtils{
     private final String NOPRODUKTMESSAGE = "There are no Product/s found";
     private final String NOPFANDWERTMESSAGE = "There are no Pfandwert/s found";
     private final String NOKUNDEMESSAGE = "There are no Customer/s found";
 
     private final Scanner scanner;
-    private final GetraenkeUsecases getraenkeUseCases;
-    private final KundenUsecases kundeUseCases;
+    private final IGetraenkeUsecases getraenkeUseCases;
+    private final IKundenUsecases kundeUseCases;
 
-    public ConsoleUtils(Scanner scanner, GetraenkeUsecases getraenkeUseCases, KundenUsecases kundeUseCases) {
+    public ConsoleUtils(Scanner scanner, IGetraenkeUsecases getraenkeUseCases, IKundenUsecases kundeUseCases) {
         this.scanner = scanner;
         this.getraenkeUseCases = getraenkeUseCases;
         this.kundeUseCases = kundeUseCases;
@@ -140,7 +140,7 @@ public class ConsoleUtils {
         return this.scanner.nextLine();
     }
 
-    public Boolean acceptInput(){
+    public boolean acceptInput(){
         while(true){
             System.out.print("Finish process yes[y] / no[n]");
             String input = this.scanner.nextLine();

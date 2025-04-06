@@ -3,9 +3,13 @@ package com.asegetraenke;
 import java.util.Scanner;
 
 import com.asegetraenke.console.ConsoleAdapter;
-import com.asegetraenke.console.ConsoleUtils;
 import com.asegetraenke.console.GetraenkeInputHandler;
 import com.asegetraenke.console.KundenInputHandler;
+import com.asegetraenke.console.Utils.ConsoleUtils;
+import com.asegetraenke.console.Utils.IConsoleUtils;
+import com.asegetraenke.console.consolefunctionmapping.ICommandRegistrar;
+import com.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
+import com.asegetraenke.console.consolefunctionmapping.CommandRegistry;
 import com.asegetraenke.repository.CustomerRepositoryImpl;
 import com.asegetraenke.repository.GetraenkeRepositoryImpl;
 import com.asegetraenke.repository.RepositoryData;
@@ -19,17 +23,18 @@ public class App {
         GetraenkeRepositoryImpl grepo = new GetraenkeRepositoryImpl(data);
         CustomerRepositoryImpl crepo = new CustomerRepositoryImpl(data);
 
-        GetraenkeUsecases gusecases = new GetraenkeUsecases(grepo, crepo);
-        KundenUsecases cusecases = new KundenUsecases(grepo, crepo);
-        
+        IGetraenkeUsecases gusecases = new GetraenkeUsecases(grepo, crepo);
+        IKundenUsecases cusecases = new KundenUsecases(grepo, crepo); 
 
-        Scanner scanner = new Scanner(System.in); 
-        ConsoleUtils consoleUtils = new ConsoleUtils(scanner, gusecases, cusecases);
-        GetraenkeInputHandler gInputHandler = new GetraenkeInputHandler(gusecases,cusecases,consoleUtils);
-        KundenInputHandler kInputHandler = new KundenInputHandler(cusecases,consoleUtils);
+        ICommandRegistrar registrar = new CommandRegistrar();
 
-        ConsoleAdapter cAdapter = new ConsoleAdapter(kInputHandler, gInputHandler, cusecases, scanner);
+        Scanner scanner = new Scanner(System.in);
+        IConsoleUtils consoleUtils = new ConsoleUtils(scanner, gusecases, cusecases); 
 
+        new GetraenkeInputHandler(gusecases, cusecases, consoleUtils, registrar);
+        new KundenInputHandler(cusecases, consoleUtils, registrar);
+
+        ConsoleAdapter cAdapter = new ConsoleAdapter(registrar, scanner);
         cAdapter.start();
     }
 }

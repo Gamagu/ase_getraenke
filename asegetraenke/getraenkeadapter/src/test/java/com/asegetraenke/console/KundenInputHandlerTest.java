@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.asegetraenke.KundenUsecases;
+import com.asegetraenke.console.Utils.ConsoleUtils;
+import com.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import com.asegetraenke.entities.Kunde;
 
 public class KundenInputHandlerTest {
@@ -23,6 +25,8 @@ public class KundenInputHandlerTest {
     private KundenUsecases mockedKundeusecases;
     @Mock
     private ConsoleUtils mockedconsoleUtils;
+    @Mock
+    private CommandRegistrar commandRegistrar;
 
 
     private final String TESTNAME = "TestName";
@@ -48,7 +52,7 @@ public class KundenInputHandlerTest {
         kundenVec = Arrays.asList(kunde1,kunde2);
 
         MockitoAnnotations.openMocks(this);
-        kundenInputHandler = new KundenInputHandler(mockedKundeusecases, mockedconsoleUtils);
+        kundenInputHandler = new KundenInputHandler(mockedKundeusecases, mockedconsoleUtils, commandRegistrar);
         System.setOut(new PrintStream(outContent));
     }
 
@@ -67,7 +71,7 @@ public class KundenInputHandlerTest {
         when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
         when(mockedconsoleUtils.acceptInput()).thenReturn(true);
 
-        kundenInputHandler = new KundenInputHandler(mockedKundeusecases, mockedconsoleUtils);
+        kundenInputHandler = new KundenInputHandler(mockedKundeusecases, mockedconsoleUtils, commandRegistrar);
 
         // Perform the action
         kundenInputHandler.handleCreateKundeInput();

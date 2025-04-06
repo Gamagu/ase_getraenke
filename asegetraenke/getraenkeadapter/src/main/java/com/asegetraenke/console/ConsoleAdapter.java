@@ -3,89 +3,66 @@ package com.asegetraenke.console;
 import java.util.Map;
 import java.util.Scanner;
 
-import com.asegetraenke.KundenUsecases;
-import com.asegetraenke.console.consolefunktionmapping.CommandEnum;
-import com.asegetraenke.console.consolefunktionmapping.GetraenkeCommand;
-import com.asegetraenke.console.consolefunktionmapping.KundenCommand;
+import com.asegetraenke.console.consolefunctionmapping.ICommandRegistrar;
+import com.asegetraenke.console.consolefunctionmapping.CommandRegistry;
 
 public class ConsoleAdapter {
-
     private final String WELCOMEMESSAGE = "Welcome to the Geatrenkehandler";
-
     private final Scanner scanner;
-    private final boolean isRunning;
-    private final GetraenkeInputHandler getraenkeInputHandler;
-    private final KundenInputHandler kundenInputHandler;
-    
+    private final ICommandRegistrar commandRegistrar;
 
-    public ConsoleAdapter(KundenInputHandler kundenInputHandler, 
-                          GetraenkeInputHandler getraenkeInputHandler, 
-                          KundenUsecases kundenUseCases,
-                          Scanner scanner) {
-
+    public ConsoleAdapter(ICommandRegistrar commandRegistrar, Scanner scanner) {
         this.scanner = scanner;
-        this.isRunning = true;
-        this.getraenkeInputHandler = getraenkeInputHandler;
-        this.kundenInputHandler = kundenInputHandler;
+        this.commandRegistrar = commandRegistrar;
     }
 
     public void start() {
         System.out.println(WELCOMEMESSAGE);
         printAllCommands();
-        while (isRunning) {
+
+        while (true) {
             String[] option = handleInput();
             if (option == null || option.length < 1) continue;
 
-            CommandEnum.fromString(option[0]).ifPresentOrElse(domain -> {
-                if (domain == CommandEnum.HELP) {
-                    printAllCommands();
-                    return;
-                }
+            String category = option[0];
+            if (category.equalsIgnoreCase("help")) {
+                printAllCommands();
+                continue;
+            }
 
-                if (option.length < 2) {
-                    System.out.println("The second command is missing");
-                    return;
-                }
+            if (option.length < 2) {
+                System.out.println("The second command is missing");
+                continue;
+            }
 
-                String subcommand = option[1];
+            String subcommand = option[1];
 
-                switch (domain) {
-                    case GETRAENKE -> GetraenkeCommand.fromString(subcommand)
-                        .ifPresentOrElse(cmd -> {
-                            cmd.execute(getraenkeInputHandler);
-                        }, () -> System.out.println(subcommand + " is not a valid Getränke-Command."));
-                    case KUNDE -> KundenCommand.fromString(subcommand)
-                        .ifPresentOrElse(cmd -> cmd.execute(kundenInputHandler), 
-                            () -> System.out.println(subcommand + " is not a valid Kunden-Command."));
-                    default -> System.out.println("Unknown command category.");
-                }
-
-            }, () -> System.out.println("The first command is unknown. Use help for all options."));
+            if (commandRegistrar.hasCommand(category, subcommand)) {
+                Runnable command = commandRegistrar.getCommand(category, subcommand);
+                command.run();
+            } else {
+                System.out.println(subcommand + " is not a valid " + category + " command.");
+            }
         }
     }
+
     private String[] handleInput() {
-        String option = scanner.nextLine();
-        option = option.toLowerCase();
-        if(option.trim() == null){
+        String option = scanner.nextLine().toLowerCase();
+        if (option.trim().isEmpty()) {
             return null;
         }
-
-        String[] optionList = option.split(" ");
-        for(String op : optionList){
-            op.trim();
-        }
-        return optionList;
+        return option.split(" ");
     }
 
-    private void printAllCommands() {
-        for (GetraenkeCommand getraenkeCommand : GetraenkeCommand.values()) {
-            System.out.println("getraenke " + getraenkeCommand.getName());
-        }
-    
-        for (KundenCommand kundenCommand : KundenCommand.values()) {
-            System.out.println("kunde " + kundenCommand.getName());
+private void printAllCommands() {
+        for (Map.Entry<String, CommandRegistry> entry : commandRegistrar.getCommandRegistry().entrySet()) {
+            String category = entry.getKey();
+            CommandRegistry registry = entry.getValue();
+
+            for (Map.Entry<String, Runnable> commandEntry : registry.getCommandMap().entrySet()) {
+                String command = commandEntry.getKey();
+                System.out.println(category + " " + command);
+            }
         }
     }
-    
-    
 }

@@ -12,7 +12,7 @@ import com.asegetraenke.repositories.CustomerRepository;
 import com.asegetraenke.repositories.GetraenkeRepository;
 
 
-public class KundenUsecases {
+public class KundenUsecases implements IKundenUsecases {
     final private GetraenkeRepository grepo;
     final private CustomerRepository crepo;
     public KundenUsecases(GetraenkeRepository grepo, CustomerRepository crepo){

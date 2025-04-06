@@ -20,7 +20,7 @@ import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
 
 
-public class GetraenkeUsecases {
+public class GetraenkeUsecases implements IGetraenkeUsecases{
     final private GetraenkeRepository grepo;
     //final private CustomerRepository crepo;
     public GetraenkeUsecases(GetraenkeRepository grepo, CustomerRepository crepo){

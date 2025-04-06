@@ -25,6 +25,7 @@ import com.asegetraenke.entities.Produkt;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.GetraenkeUsecases;
 import com.asegetraenke.KundenUsecases;
+import com.asegetraenke.console.Utils.ConsoleUtils;
 
 public class ConsoleUtilsTest {
 

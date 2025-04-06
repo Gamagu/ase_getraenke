@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.asegetraenke.KundenUsecases;
+import com.asegetraenke.console.Utils.ConsoleUtils;
+import com.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.GetraenkeUsecases;
 
@@ -23,6 +25,8 @@ public class GetraenkeInputHandlerTest {
     private KundenUsecases mockedKundenUsecases;
     @Mock
     private ConsoleUtils mockedConsoleUtils;
+    @Mock
+    private CommandRegistrar commandRegistrar;
 
     private GetraenkeInputHandler getraenkeInputHandler;
 
@@ -30,7 +34,7 @@ public class GetraenkeInputHandlerTest {
     @BeforeEach
     public void setUp(){
         MockitoAnnotations.openMocks(this);
-        this.getraenkeInputHandler = new GetraenkeInputHandler(mockedGetraenkeUsecases, mockedKundenUsecases, mockedConsoleUtils);
+        this.getraenkeInputHandler = new GetraenkeInputHandler(mockedGetraenkeUsecases, mockedKundenUsecases, mockedConsoleUtils, commandRegistrar);
     }
 
     @Test
