@@ -1,38 +1,28 @@
 package com.asegetraenke.console;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.asegetraenke.KundenUsecases;
+import com.asegetraenke.IKundenUsecases;
+import com.asegetraenke.console.Utils.IConsoleUtils;
+import com.asegetraenke.console.consolefunctionmapping.ICommand;
+import com.asegetraenke.console.consolefunctionmapping.ICommandRegistrar;
 import com.asegetraenke.entities.Bestellung;
 import com.asegetraenke.entities.Kunde;
 
 public class KundenInputHandler {
-    private final Map<String, Runnable> kundeCommandMap;
-    private final KundenUsecases kundeUseCases;
-    private final ConsoleUtils consoleUtils;
+    private final IKundenUsecases kundeUseCases;
+    private final IConsoleUtils consoleUtils;
     
-    public KundenInputHandler(KundenUsecases kundeUseCases, ConsoleUtils consoleUtils) {
-        this.kundeCommandMap = initializeCommandMapKunde();
+    public KundenInputHandler(IKundenUsecases kundeUseCases, IConsoleUtils consoleUtils, ICommandRegistrar registrar) {
         this.kundeUseCases = kundeUseCases;
         this.consoleUtils = consoleUtils;
+        registrar.registerCommands(this);
     }
 
-    private Map<String, Runnable> initializeCommandMapKunde() {
-        Map<String, Runnable> map = new HashMap<>();
-        map.put("createkunde", () -> handleCreateKundeInput());
-        map.put("getallkunden", () -> handleGetAllKundenInput());
-        map.put("setname", () -> handleSetNameInput());
-        map.put("getkunde", () -> handleGetKundeInput());
-        map.put("getkundenbalance", () -> handleGetKundenBalanceInput());
-        map.put("getallbestellungen", () -> handleGetAllBestellungenInput());
-        return map;
-    }
-
+    @ICommand(value = "createkunde", category = "kunde")
     public void handleCreateKundeInput() {
         System.out.println("Create Customer: ");
         String name = consoleUtils.readStringInputWithPrompt("Name: ");
@@ -44,6 +34,7 @@ public class KundenInputHandler {
         }
     }
 
+    @ICommand(value = "getallkunden", category = "kunde")
     public void handleGetAllKundenInput() {
         Iterable<Kunde> kundenVec = this.kundeUseCases.getAllKunden();
         List<Kunde> kundenList = StreamSupport.stream(kundenVec.spliterator(), false)
@@ -60,6 +51,7 @@ public class KundenInputHandler {
         }
     }
 
+    @ICommand(value = "setname", category = "kunde")
     public void handleSetNameInput() {
         Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
         if(kundeOptional.isEmpty()){
@@ -77,18 +69,18 @@ public class KundenInputHandler {
         System.out.println("Name was succesfully changed");
     }
 
-    //TODO Keine Leave Kondition
-    public void handleGetKundeInput() {
-        while(true){
-            String eMail = consoleUtils.readStringInputWithPrompt("E-Mail: ");
-            Optional<Kunde> kunde = this.kundeUseCases.getKunde(eMail);
-            if(kunde.isPresent()){
-                break;
-            }
-            System.out.println("No Customer with the Mail: " + eMail + " was found.");
-        }
-    }
 
+    @ICommand(value = "getkunde", category = "kunde")
+    public void handleGetKundeInput() {
+        String eMail = consoleUtils.readStringInputWithPrompt("E-Mail: ");
+        Optional<Kunde> kunde = this.kundeUseCases.getKunde(eMail);
+        if(kunde.isPresent()){
+            return;
+        }
+        System.out.println("No Customer with the Mail: " + eMail + " was found.");
+    }
+    
+    @ICommand(value = "getkundenbalance", category = "kunde")
     public void handleGetKundenBalanceInput() {
         Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
         if(kundeOptional.isEmpty()){
@@ -100,6 +92,7 @@ public class KundenInputHandler {
         System.out.println( kunde.toString()+ "\n"+ dBalance);
     }
 
+    @ICommand(value = "getallbestellungen", category = "kunde")
     public void handleGetAllBestellungenInput() {
         Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
         if(kundeOptional.isEmpty()){
@@ -111,8 +104,5 @@ public class KundenInputHandler {
         for(Bestellung bestellung : bestellungsVec){
             System.out.println(bestellung.toString());
         }
-    }
-    public Map<String, Runnable> getKundeCommandMap() {
-        return kundeCommandMap;
     }
 }

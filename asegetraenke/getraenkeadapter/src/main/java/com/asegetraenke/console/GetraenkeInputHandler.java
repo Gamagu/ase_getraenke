@@ -3,9 +3,7 @@ package com.asegetraenke.console;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,47 +14,25 @@ import com.asegetraenke.entities.Produkt;
 import com.asegetraenke.util.Triple;
 import com.asegetraenke.valueobjects.Pfandwert;
 import com.asegetraenke.valueobjects.Preis;
-import com.asegetraenke.GetraenkeUsecases;
-import com.asegetraenke.KundenUsecases;
+import com.asegetraenke.IGetraenkeUsecases;
+import com.asegetraenke.IKundenUsecases;
+import com.asegetraenke.console.Utils.IConsoleUtils;
+import com.asegetraenke.console.consolefunctionmapping.ICommand;
+import com.asegetraenke.console.consolefunctionmapping.ICommandRegistrar;
 
 public class GetraenkeInputHandler {
-    private final Map<String,Runnable> getrankeCommandMap;
-    private final GetraenkeUsecases getraenkeusecases;
-    private final KundenUsecases kundenUsecases;
-    private final ConsoleUtils consoleUtils;
+    private final IGetraenkeUsecases getraenkeusecases;
+    private final IKundenUsecases kundenUsecases;
+    private final IConsoleUtils consoleUtils;
 
-    public GetraenkeInputHandler(GetraenkeUsecases getraenkeusecases, KundenUsecases kundenUsecases, ConsoleUtils consoleUtils){
-        this.getrankeCommandMap = initializeCommandMapGetraenke();
+    public GetraenkeInputHandler(IGetraenkeUsecases getraenkeusecases, IKundenUsecases kundenUsecases, IConsoleUtils consoleUtils, ICommandRegistrar registrar){
         this.getraenkeusecases = getraenkeusecases;
         this.consoleUtils = consoleUtils;
         this.kundenUsecases = kundenUsecases;
+        registrar.registerCommands(this);
     }
 
-    private Map<String, Runnable> initializeCommandMapGetraenke() {
-        Map<String, Runnable> map = new HashMap<>();
-        map.put("acceptlieferung", () -> handleAcceptLieferungInput());
-        map.put("addpfandwert", () -> handleAddPfandWertInput());
-        map.put("setpfandwert", () -> handleSetPfandwertInput());
-        map.put("setpfandwertprodukt", () -> handleSetPfandwertProduktInput());
-        map.put("getallpfandwerte", () -> handleGetAllPfandwerteInput());
-        map.put("getpfandwert", () -> handleGetPfandWertInput());
-        map.put("getallproducts", () -> handleGetAllProductsInput());
-        map.put("getpriceforprodukt", () -> handleGetPriceForProduktInput());
-        map.put("getpricehistoryforprodukt", () -> handleGetPriceHistoryForProduktInput());
-        map.put("setpriceforprodukt", () -> handleSetPriceForProduktInput());
-        map.put("getstockamountforprodukt", () -> handleGetStockAmountForProduktInput());
-        map.put("addprodukt", () -> handleAddProduktInput());
-        map.put("getproduct", () -> handleGetProductInput());
-        map.put("addbestellung", () -> handleAddBestellungInput());
-        map.put("addzahlungsvorgang", () -> handleAddZahlungsvorgangInput());
-        return map;
-    }
-
-    //TODO Ask Nikals what he was thinking here 
-    public void handleAcceptLieferungInput() {
-
-    }
-
+    @ICommand(value = "addpfandwert", category = "getraenke")
     public void handleAddPfandWertInput() {
         System.out.println("Add new Pfand value to existing");
         String description = consoleUtils.readStringInputWithPrompt("Description: ");
@@ -73,7 +49,8 @@ public class GetraenkeInputHandler {
             System.err.println(e.getMessage());
         }
     }
-
+    
+    @ICommand(value = "setpfandwert", category = "getraenke")
     public void handleSetPfandwertInput() {
         Optional<Pfandwert> pfandwerOptional = consoleUtils.pickOnePfandwertFromAllPfandwerts();
         if(pfandwerOptional.isEmpty()){
@@ -95,6 +72,7 @@ public class GetraenkeInputHandler {
         }
     }
     
+    @ICommand(value = "setpfandwertprodukt", category = "getraenke")
     public void handleSetPfandwertProduktInput() {
         Optional<Pfandwert> pfandwertOptional = consoleUtils.pickOnePfandwertFromAllPfandwerts();
         if (pfandwertOptional.isEmpty()) {
@@ -120,6 +98,7 @@ public class GetraenkeInputHandler {
         }
     }
 
+    @ICommand(value = "getallpfandwerte", category = "getraenke")
     public void handleGetAllPfandwerteInput() {
         Iterable<Pfandwert> pfandwertVec = getraenkeusecases.getAllPfandwerte();
         List<Pfandwert> pfandwertList = StreamSupport.stream(pfandwertVec.spliterator(), false)
@@ -134,10 +113,22 @@ public class GetraenkeInputHandler {
             count++;
         }
     }
+
     
+    @ICommand(value = "getpfandwert", category = "getraenke")
     public void handleGetPfandWertInput() {
         String uuidString = consoleUtils.readStringInputWithPrompt("UUID of Pfandwert: ");
-        UUID uuid = UUID.fromString(uuidString);
+        UUID uuid = null;
+        try {
+            uuid = UUID.fromString(uuidString);    
+        } catch (Exception e) {
+            System.out.println("Conversion from " + uuidString + " to UUID was not possible");
+            return;
+        }
+        if(uuid==null){
+            return;
+        }
+        
         Optional<Pfandwert> pfandwert = getraenkeusecases.getPfandWert(uuid);
         if(pfandwert.isEmpty()){
             consoleUtils.errorNoPfandWert();
@@ -145,7 +136,9 @@ public class GetraenkeInputHandler {
         }
         consoleUtils.printPfandwertWithNumber(pfandwert.get(), 1);
     }
+
     
+    @ICommand(value = "getallproducts", category = "getraenke")
     public void handleGetAllProductsInput() {
         Iterable<Produkt> productVec = getraenkeusecases.getAllProducts();
         List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
@@ -161,6 +154,7 @@ public class GetraenkeInputHandler {
         }
     }
     
+    @ICommand(value = "getpriceforprodukt", category = "getraenke")
     public void handleGetPriceForProduktInput() {
         Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
@@ -173,6 +167,7 @@ public class GetraenkeInputHandler {
                            getraenkeusecases.getPriceForProdukt(produkt));
     }
     
+    @ICommand(value = "getpricehistoryforprodukt", category = "getraenke")
     public void handleGetPriceHistoryForProduktInput() {
         Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
@@ -187,7 +182,8 @@ public class GetraenkeInputHandler {
         }
 
     }
-    
+
+    @ICommand(value = "setpriceforprodukt", category = "getraenke")
     public void handleSetPriceForProduktInput() {
         Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
@@ -202,6 +198,7 @@ public class GetraenkeInputHandler {
         getraenkeusecases.setPriceForProdukt(produkt, newPrice);
     }
 
+    @ICommand(value = "getstockamountforprodukt", category = "getraenke")
     public void handleGetStockAmountForProduktInput() {
         Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
         if(produktOptional.isEmpty()){
@@ -213,6 +210,7 @@ public class GetraenkeInputHandler {
         System.out.println("The Stock of the Product "+ produkt.toString()+ " is : " + stock);        
     }
     
+    @ICommand(value = "addprodukt", category = "getraenke")
     public void handleAddProduktInput() {
         System.out.println("Add Product to existing Products");
         String name = consoleUtils.readStringInputWithPrompt("Name: ");
@@ -232,9 +230,21 @@ public class GetraenkeInputHandler {
         
     }
     
+    @ICommand(value = "getproduct", category = "getraenke")
     public void handleGetProductInput() {
         String uuidString = consoleUtils.readStringInputWithPrompt("UUID for product: ");
-        UUID uuid = UUID.fromString(uuidString);
+        UUID uuid = null;
+        try {
+            uuid = UUID.fromString(uuidString);
+        } catch (Exception e) {
+            System.out.println("Conversion from " + uuidString + " to UUID was not possible");
+            
+        }
+
+        if(uuid == null) {
+            return;
+        }
+
         try {
             Optional<Produkt> produkt = getraenkeusecases.getProduct(uuid);    
             if(produkt.isEmpty()){
@@ -248,6 +258,7 @@ public class GetraenkeInputHandler {
         
     }
 
+    @ICommand(value = "addbestellung", category = "getraenke")
     public void handleAddBestellungInput() {
         Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
         if(kundeOptional.isEmpty()){
@@ -275,12 +286,12 @@ public class GetraenkeInputHandler {
         try {
             getraenkeusecases.addBestellung(kunde, bestellungsList);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
     }
 
+    @ICommand(value = "addzahlungsvorgang", category = "getraenke")
     public void handleAddZahlungsvorgangInput() {
         Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
         if(kundeOptional.isEmpty()){
@@ -303,9 +314,5 @@ public class GetraenkeInputHandler {
             "LocalDateTime: "+ localDateTime);
             System.err.println(e.getMessage());
         }
-    }
-
-    public Map<String,Runnable> getGetrankeCommandMap() {
-        return this.getrankeCommandMap;
     }
 }
