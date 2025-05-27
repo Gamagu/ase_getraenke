@@ -1,4 +1,4 @@
-package de.nyg.adapters.asegetraenke.console.Utils;
+package de.nyg.adapters.asegetraenke.console.utils;
 
 import java.util.List;
 import java.util.Optional;

@@ -18,11 +18,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import de.nyg.application.asegetraenke.KundenUsecases;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsolePrinter;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleReader;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleError;
-import de.nyg.adapters.asegetraenke.console.Utils.EntityPicker;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
+import de.nyg.adapters.asegetraenke.console.utils.ConsoleError;
+import de.nyg.adapters.asegetraenke.console.utils.ConsolePrinter;
+import de.nyg.adapters.asegetraenke.console.utils.ConsoleReader;
+import de.nyg.adapters.asegetraenke.console.utils.EntityPicker;
 import de.nyg.domain.asegetraenke.entities.Kunde;
 
 public class KundenInputHandlerTest {

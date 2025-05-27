@@ -6,25 +6,25 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import de.nyg.application.asegetraenke.KundenUsecases;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsolePrinter;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleReader;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleError;
-import de.nyg.adapters.asegetraenke.console.Utils.EntityPicker;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.ICommand;
+import de.nyg.adapters.asegetraenke.console.utils.ConsoleError;
+import de.nyg.adapters.asegetraenke.console.utils.ConsolePrinter;
+import de.nyg.adapters.asegetraenke.console.utils.ConsoleReader;
+import de.nyg.adapters.asegetraenke.console.utils.EntityPicker;
 import de.nyg.domain.asegetraenke.entities.Bestellung;
 import de.nyg.domain.asegetraenke.entities.Kunde;
 
 public class KundenInputHandler {
     private final KundenUsecases kundeUseCases;
-    private final ConsoleError consoleUtils;
+    private final ConsoleError consoleError;
     private final ConsoleReader consoleReader;
     private final ConsolePrinter consolePrinter;
     private final EntityPicker<Kunde> kundenPicker;
     
-    public KundenInputHandler(KundenUsecases kundeUseCases, ConsoleError consoleUtils, CommandRegistrar registrar, EntityPicker<Kunde> kundenPicker, ConsoleReader consoleReader, ConsolePrinter consolePrinter) {
+    public KundenInputHandler(KundenUsecases kundeUseCases, ConsoleError consoleError, CommandRegistrar registrar, EntityPicker<Kunde> kundenPicker, ConsoleReader consoleReader, ConsolePrinter consolePrinter) {
     this.kundeUseCases = kundeUseCases;
-        this.consoleUtils = consoleUtils;
+        this.consoleError = consoleError;
         this.kundenPicker = kundenPicker;
         this.consoleReader = consoleReader;
         this.consolePrinter = consolePrinter;
@@ -50,7 +50,7 @@ public class KundenInputHandler {
                                  .collect(Collectors.toList());
         
         if(kundenList.isEmpty()){
-            consoleUtils.errorNoKunden();
+            consoleError.errorNoKunden();
             return;
         }
         int count = 1;
@@ -66,7 +66,7 @@ public class KundenInputHandler {
         List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
         Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
-            consoleUtils.errorNoKunden();
+            consoleError.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
@@ -96,7 +96,7 @@ public class KundenInputHandler {
         List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
         Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
-            consoleUtils.errorNoKunden();
+            consoleError.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
@@ -110,7 +110,7 @@ public class KundenInputHandler {
         List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
         Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
-            consoleUtils.errorNoKunden();
+            consoleError.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();

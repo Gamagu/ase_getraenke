@@ -1,4 +1,4 @@
-package de.nyg.adapters.asegetraenke.console.Utils;
+package de.nyg.adapters.asegetraenke.console.utils;
 
 import de.nyg.domain.asegetraenke.entities.Kunde;
 import de.nyg.domain.asegetraenke.entities.Produkt;

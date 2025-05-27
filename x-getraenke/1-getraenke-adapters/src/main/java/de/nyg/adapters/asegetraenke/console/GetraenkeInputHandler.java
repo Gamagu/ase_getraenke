@@ -11,12 +11,12 @@ import java.util.stream.StreamSupport;
 
 import de.nyg.application.asegetraenke.GetraenkeUsecases;
 import de.nyg.application.asegetraenke.KundenUsecases;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsolePrinter;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleReader;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleError;
-import de.nyg.adapters.asegetraenke.console.Utils.EntityPicker;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.ICommand;
+import de.nyg.adapters.asegetraenke.console.utils.ConsoleError;
+import de.nyg.adapters.asegetraenke.console.utils.ConsolePrinter;
+import de.nyg.adapters.asegetraenke.console.utils.ConsoleReader;
+import de.nyg.adapters.asegetraenke.console.utils.EntityPicker;
 import de.nyg.domain.asegetraenke.entities.Kunde;
 import de.nyg.domain.asegetraenke.entities.Produkt;
 import de.nyg.domain.asegetraenke.util.Triple;
@@ -26,16 +26,16 @@ import de.nyg.domain.asegetraenke.valueobjects.Preis;
 public class GetraenkeInputHandler {
     private final GetraenkeUsecases getraenkeusecases;
     private final KundenUsecases kundenUsecases;
-    private final ConsoleError consoleUtils;
+    private final ConsoleError consoleError;
     private final EntityPicker<Kunde> kundenPicker;
     private final EntityPicker<Produkt> produktPicker;
     private final EntityPicker<Pfandwert> pfandwertPicker;
     private final ConsolePrinter consolePrinter;
     private final ConsoleReader consoleReader;
 
-    public GetraenkeInputHandler(GetraenkeUsecases getraenkeusecases, KundenUsecases kundenUsecases, ConsoleError consoleUtils, CommandRegistrar registrar, EntityPicker<Kunde> kundenPicker, EntityPicker<Produkt> produktPicker,EntityPicker<Pfandwert> pfandwertPicker, ConsoleReader consoleReader, ConsolePrinter consolePrinter){
+    public GetraenkeInputHandler(GetraenkeUsecases getraenkeusecases, KundenUsecases kundenUsecases, ConsoleError consoleError, CommandRegistrar registrar, EntityPicker<Kunde> kundenPicker, EntityPicker<Produkt> produktPicker,EntityPicker<Pfandwert> pfandwertPicker, ConsoleReader consoleReader, ConsolePrinter consolePrinter){
         this.getraenkeusecases = getraenkeusecases;
-        this.consoleUtils = consoleUtils;
+        this.consoleError = consoleError;
         this.kundenUsecases = kundenUsecases;
         this.kundenPicker = kundenPicker;
         this.produktPicker = produktPicker;
@@ -69,7 +69,7 @@ public class GetraenkeInputHandler {
         List<Pfandwert> pfandwertList = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
         Optional<Pfandwert> pfandwertOptional = pfandwertPicker.pickOneFromList(pfandwertList, Pfandwert::toString);
         if(pfandwertOptional.isEmpty()){
-            consoleUtils.errorNoPfandWert();
+            consoleError.errorNoPfandWert();
             return;
         }
         Pfandwert pfandwert = pfandwertOptional.get();
@@ -94,7 +94,7 @@ public class GetraenkeInputHandler {
         Optional<Pfandwert> pfandwertOptional = pfandwertPicker.pickOneFromList(pfandwertList, Pfandwert::toString);
 
         if (pfandwertOptional.isEmpty()) {
-            consoleUtils.errorNoPfandWert();
+            consoleError.errorNoPfandWert();
             return;
         }
         Pfandwert pfandwert = pfandwertOptional.get();
@@ -104,7 +104,7 @@ public class GetraenkeInputHandler {
         List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
         Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
-            consoleUtils.errorNoProdukt();
+            consoleError.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -125,7 +125,7 @@ public class GetraenkeInputHandler {
         List<Pfandwert> pfandwertList = StreamSupport.stream(pfandwertVec.spliterator(), false)
                                     .collect(Collectors.toList());
         if(pfandwertList.isEmpty()){
-            consoleUtils.errorNoProdukt();
+            consoleError.errorNoProdukt();
             return;
         }
         int count = 1;
@@ -152,7 +152,7 @@ public class GetraenkeInputHandler {
         
         Optional<Pfandwert> pfandwert = getraenkeusecases.getPfandWert(uuid);
         if(pfandwert.isEmpty()){
-            consoleUtils.errorNoPfandWert();
+            consoleError.errorNoPfandWert();
             return;
         }
         consolePrinter.printPfandwertWithNumber(pfandwert.get(), 1);
@@ -165,7 +165,7 @@ public class GetraenkeInputHandler {
         List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
                                     .collect(Collectors.toList());
         if(productList.isEmpty()){
-            consoleUtils.errorNoProdukt();
+            consoleError.errorNoProdukt();
             return;
         }
         int count = 1;
@@ -181,7 +181,7 @@ public class GetraenkeInputHandler {
         List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
         Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
-            consoleUtils.errorNoProdukt();
+            consoleError.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -196,7 +196,7 @@ public class GetraenkeInputHandler {
         List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
         Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
-            consoleUtils.errorNoProdukt();
+            consoleError.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -214,7 +214,7 @@ public class GetraenkeInputHandler {
         List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
         Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
-            consoleUtils.errorNoProdukt();
+            consoleError.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -231,7 +231,7 @@ public class GetraenkeInputHandler {
         List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
         Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
-            consoleUtils.errorNoProdukt();
+            consoleError.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
@@ -277,7 +277,7 @@ public class GetraenkeInputHandler {
         try {
             Optional<Produkt> produkt = getraenkeusecases.getProduct(uuid);    
             if(produkt.isEmpty()){
-                consoleUtils.errorNoProdukt();
+                consoleError.errorNoProdukt();
                 return;
             }
             System.out.println(produkt.toString());
@@ -293,7 +293,7 @@ public class GetraenkeInputHandler {
         List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
         Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
-            consoleUtils.errorNoKunden();
+            consoleError.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
@@ -330,7 +330,7 @@ public class GetraenkeInputHandler {
         List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
         Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
-            consoleUtils.errorNoKunden();
+            consoleError.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
