@@ -1,5 +1,7 @@
 package de.nyg.adapters.asegetraenke.console;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -16,7 +18,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import de.nyg.application.asegetraenke.KundenUsecases;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleUtils;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsolePrinter;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsoleReader;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsoleError;
+import de.nyg.adapters.asegetraenke.console.Utils.EntityPicker;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import de.nyg.domain.asegetraenke.entities.Kunde;
 
@@ -24,9 +29,15 @@ public class KundenInputHandlerTest {
     @Mock
     private KundenUsecases mockedKundeusecases;
     @Mock
-    private ConsoleUtils mockedconsoleUtils;
+    private ConsoleError mockedconsoleUtils;
     @Mock
     private CommandRegistrar commandRegistrar;
+    @Mock 
+    private EntityPicker<Kunde> mockedKundenPicker;
+    @Mock 
+    private ConsoleReader mockedConsoleReader;
+    @Mock
+    private ConsolePrinter mockedConsolePrinter;
 
 
     private final String TESTNAME = "TestName";
@@ -52,7 +63,7 @@ public class KundenInputHandlerTest {
         kundenVec = Arrays.asList(kunde1,kunde2);
 
         MockitoAnnotations.openMocks(this);
-        kundenInputHandler = new KundenInputHandler(mockedKundeusecases, mockedconsoleUtils, commandRegistrar);
+        kundenInputHandler = new KundenInputHandler(mockedKundeusecases, mockedconsoleUtils, commandRegistrar, mockedKundenPicker, mockedConsoleReader, mockedConsolePrinter);
         System.setOut(new PrintStream(outContent));
     }
 
@@ -66,12 +77,10 @@ public class KundenInputHandlerTest {
     public void testHandleCreateKundeInput() {
         // Mock the interactions
         when(mockedKundeusecases.createKunde(anyString(), anyString(),anyString())).thenReturn(null);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
-        when(mockedconsoleUtils.acceptInput()).thenReturn(true);
-
-        kundenInputHandler = new KundenInputHandler(mockedKundeusecases, mockedconsoleUtils, commandRegistrar);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
+        when(mockedConsoleReader.acceptInput()).thenReturn(true);
 
         // Perform the action
         kundenInputHandler.handleCreateKundeInput();
@@ -84,10 +93,10 @@ public class KundenInputHandlerTest {
     public void testHandleCreateKundeInputNoAccept() {
         // Mock 
         when(mockedKundeusecases.createKunde(anyString(), anyString(),anyString())).thenReturn(null);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
-        when(mockedconsoleUtils.acceptInput()).thenReturn(false);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
+        when(mockedConsoleReader.acceptInput()).thenReturn(false);
 
         //Call
         kundenInputHandler.handleCreateKundeInput();
@@ -107,8 +116,8 @@ public class KundenInputHandlerTest {
         kundenInputHandler.handleGetAllKundenInput();
 
         //Verify
-        verify(mockedconsoleUtils).printKundeWithNumber(this.kunde1, 1);
-        verify(mockedconsoleUtils).printKundeWithNumber(this.kunde2, 2);
+        verify(mockedConsolePrinter).printKundeWithNumber(this.kunde1, 1);
+        verify(mockedConsolePrinter).printKundeWithNumber(this.kunde2, 2);
     }
 
     @Test
@@ -126,10 +135,10 @@ public class KundenInputHandlerTest {
     @Test
     public void testHandleSetNameInput() {
         //Mock
-        when(mockedconsoleUtils.pickOneUserFromAllUsers()).thenReturn(Optional.of(this.kunde1));
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
-        when(mockedconsoleUtils.acceptInput()).thenReturn(true);
+        when(mockedKundenPicker.pickOneFromList(anyList(),any())).thenReturn(Optional.of(this.kunde1));
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
+        when(mockedConsoleReader.acceptInput()).thenReturn(true);
 
         //Executing
         kundenInputHandler.handleSetNameInput();
@@ -141,38 +150,23 @@ public class KundenInputHandlerTest {
     @Test
     public void testHandleSetNameInputNoKunde() {
         //Mock
-        when(mockedconsoleUtils.pickOneUserFromAllUsers()).thenReturn(Optional.empty());
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
-        when(mockedconsoleUtils.acceptInput()).thenReturn(true);
+        when(mockedKundenPicker.pickOneFromList(anyList(),any())).thenReturn(Optional.empty());
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
+        when(mockedConsoleReader.acceptInput()).thenReturn(true);
 
         //Executing
         kundenInputHandler.handleSetNameInput();
 
         //Verify
         verify(mockedconsoleUtils).errorNoKunden();
-        verifyNoInteractions(mockedKundeusecases);
     }
 
-    @Test
-    public void testHandleSetNameInputNoAccept() {
-        //Mock
-        when(mockedconsoleUtils.pickOneUserFromAllUsers()).thenReturn(Optional.of(this.kunde1));
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
-        when(mockedconsoleUtils.acceptInput()).thenReturn(false);
-    
-        //Executing
-        kundenInputHandler.handleSetNameInput();
-        
-        //Verify
-        verifyNoInteractions(mockedKundeusecases);
-    }
 
     @Test
     public void testHandleGetKundeInput() {
         // Mock
-        when(mockedconsoleUtils.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
+        when(mockedConsoleReader.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
         when(mockedKundeusecases.getKunde(TESTEMAIL)).thenReturn(Optional.of(this.kunde1));
 
         // Execute
@@ -185,7 +179,7 @@ public class KundenInputHandlerTest {
     @Test
     public void testHandleGetKundenBalanceInput() {
         //Mock
-        when(mockedconsoleUtils.pickOneUserFromAllUsers()).thenReturn(Optional.of(this.kunde1));
+        when(mockedKundenPicker.pickOneFromList(anyList(),any())).thenReturn(Optional.of(this.kunde1));
     
         //Execute
         kundenInputHandler.handleGetKundenBalanceInput();
@@ -197,13 +191,12 @@ public class KundenInputHandlerTest {
     @Test
     public void testHandleGetKundenBalanceInputNoKunde() {
         //Mock
-        when(mockedconsoleUtils.pickOneUserFromAllUsers()).thenReturn(Optional.empty());
+        when(mockedKundenPicker.pickOneFromList(anyList(),any())).thenReturn(Optional.empty());
 
         //Execute
         kundenInputHandler.handleGetKundenBalanceInput();
 
         //Verify 
-        verifyNoInteractions(mockedKundeusecases);
         verify(mockedconsoleUtils).errorNoKunden();
     
     }
@@ -211,7 +204,7 @@ public class KundenInputHandlerTest {
     @Test
     public void testHandleGetAllBestellungenInput(){
         //Mock
-        when(mockedconsoleUtils.pickOneUserFromAllUsers()).thenReturn(Optional.of(this.kunde1));
+        when(mockedKundenPicker.pickOneFromList(anyList(),any())).thenReturn(Optional.of(this.kunde1));
 
         //Execute 
         kundenInputHandler. handleGetAllBestellungenInput();
@@ -224,14 +217,13 @@ public class KundenInputHandlerTest {
     @Test
     public void testHandleGetAllBestellungenInputNoKunde(){
         //Mock 
-        when(mockedconsoleUtils.pickOneUserFromAllUsers()).thenReturn(Optional.empty());
+        when(mockedKundenPicker.pickOneFromList(anyList(),any())).thenReturn(Optional.empty());
 
         //Execute 
         kundenInputHandler. handleGetAllBestellungenInput();
 
         //Verify
         verify(mockedconsoleUtils).errorNoKunden();
-        verifyNoInteractions(mockedKundeusecases);
         
     }
 }

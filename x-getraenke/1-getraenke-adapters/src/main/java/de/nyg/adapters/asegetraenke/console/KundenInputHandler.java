@@ -6,7 +6,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import de.nyg.application.asegetraenke.KundenUsecases;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleUtils;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsolePrinter;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsoleReader;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsoleError;
+import de.nyg.adapters.asegetraenke.console.Utils.EntityPicker;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.ICommand;
 import de.nyg.domain.asegetraenke.entities.Bestellung;
@@ -14,21 +17,27 @@ import de.nyg.domain.asegetraenke.entities.Kunde;
 
 public class KundenInputHandler {
     private final KundenUsecases kundeUseCases;
-    private final ConsoleUtils consoleUtils;
+    private final ConsoleError consoleUtils;
+    private final ConsoleReader consoleReader;
+    private final ConsolePrinter consolePrinter;
+    private final EntityPicker<Kunde> kundenPicker;
     
-    public KundenInputHandler(KundenUsecases kundeUseCases, ConsoleUtils consoleUtils, CommandRegistrar registrar) {
-        this.kundeUseCases = kundeUseCases;
+    public KundenInputHandler(KundenUsecases kundeUseCases, ConsoleError consoleUtils, CommandRegistrar registrar, EntityPicker<Kunde> kundenPicker, ConsoleReader consoleReader, ConsolePrinter consolePrinter) {
+    this.kundeUseCases = kundeUseCases;
         this.consoleUtils = consoleUtils;
+        this.kundenPicker = kundenPicker;
+        this.consoleReader = consoleReader;
+        this.consolePrinter = consolePrinter;
         registrar.registerCommands(this);
     }
 
     @ICommand(value = "createkunde", category = "kunde")
     public void handleCreateKundeInput() {
         System.out.println("Create Customer: ");
-        String name = consoleUtils.readStringInputWithPrompt("Name: ");
-        String nachname = consoleUtils.readStringInputWithPrompt("Nachname: ");    
-        String eMail = consoleUtils.readStringInputWithPrompt("E-Mail: ");
-        if(consoleUtils.acceptInput()){
+        String name = consoleReader.readStringInputWithPrompt("Name: ");
+        String nachname = consoleReader.readStringInputWithPrompt("Nachname: ");    
+        String eMail = consoleReader.readStringInputWithPrompt("E-Mail: ");
+        if(consoleReader.acceptInput()){
             kundeUseCases.createKunde(name, nachname, eMail);
             System.out.println("Kunde was created succesfully");
         }
@@ -46,33 +55,34 @@ public class KundenInputHandler {
         }
         int count = 1;
         for(Kunde kunde : kundenList){
-            consoleUtils.printKundeWithNumber(kunde,count);
+            consolePrinter.printKundeWithNumber(kunde,count);
             count++;
         }
     }
 
     @ICommand(value = "setname", category = "kunde")
     public void handleSetNameInput() {
-        Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
+        Iterable<Kunde> iterable = kundeUseCases.getAllKunden();
+        List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+        Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
             consoleUtils.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
         System.out.println(kunde.toString());
-        String newFirstName = consoleUtils.readStringInputWithPrompt("Name: ");
-        String newSecondName = consoleUtils.readStringInputWithPrompt("Nachname: ");
-        if(!consoleUtils.acceptInput()){
+        String newFirstName = consoleReader.readStringInputWithPrompt("Name: ");
+        String newSecondName = consoleReader.readStringInputWithPrompt("Nachname: ");
+        if(!consoleReader.acceptInput()){
             return;
         }
         this.kundeUseCases.setName(kunde, newFirstName, newSecondName);
         System.out.println("Name was succesfully changed");
     }
 
-
     @ICommand(value = "getkunde", category = "kunde")
     public void handleGetKundeInput() {
-        String eMail = consoleUtils.readStringInputWithPrompt("E-Mail: ");
+        String eMail = consoleReader.readStringInputWithPrompt("E-Mail: ");
         Optional<Kunde> kunde = this.kundeUseCases.getKunde(eMail);
         if(kunde.isPresent()){
             return;
@@ -82,7 +92,9 @@ public class KundenInputHandler {
     
     @ICommand(value = "getkundenbalance", category = "kunde")
     public void handleGetKundenBalanceInput() {
-        Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
+        Iterable<Kunde> iterable = kundeUseCases.getAllKunden();
+        List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+        Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
             consoleUtils.errorNoKunden();
             return;
@@ -94,7 +106,9 @@ public class KundenInputHandler {
 
     @ICommand(value = "getallbestellungen", category = "kunde")
     public void handleGetAllBestellungenInput() {
-        Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
+        Iterable<Kunde> iterable = kundeUseCases.getAllKunden();
+        List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+        Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
             consoleUtils.errorNoKunden();
             return;

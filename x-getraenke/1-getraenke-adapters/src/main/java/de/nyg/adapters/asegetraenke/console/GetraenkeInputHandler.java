@@ -11,7 +11,10 @@ import java.util.stream.StreamSupport;
 
 import de.nyg.application.asegetraenke.GetraenkeUsecases;
 import de.nyg.application.asegetraenke.KundenUsecases;
-import de.nyg.adapters.asegetraenke.console.Utils.ConsoleUtils;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsolePrinter;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsoleReader;
+import de.nyg.adapters.asegetraenke.console.Utils.ConsoleError;
+import de.nyg.adapters.asegetraenke.console.Utils.EntityPicker;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.ICommand;
 import de.nyg.domain.asegetraenke.entities.Kunde;
@@ -23,21 +26,31 @@ import de.nyg.domain.asegetraenke.valueobjects.Preis;
 public class GetraenkeInputHandler {
     private final GetraenkeUsecases getraenkeusecases;
     private final KundenUsecases kundenUsecases;
-    private final ConsoleUtils consoleUtils;
+    private final ConsoleError consoleUtils;
+    private final EntityPicker<Kunde> kundenPicker;
+    private final EntityPicker<Produkt> produktPicker;
+    private final EntityPicker<Pfandwert> pfandwertPicker;
+    private final ConsolePrinter consolePrinter;
+    private final ConsoleReader consoleReader;
 
-    public GetraenkeInputHandler(GetraenkeUsecases getraenkeusecases, KundenUsecases kundenUsecases, ConsoleUtils consoleUtils, CommandRegistrar registrar){
+    public GetraenkeInputHandler(GetraenkeUsecases getraenkeusecases, KundenUsecases kundenUsecases, ConsoleError consoleUtils, CommandRegistrar registrar, EntityPicker<Kunde> kundenPicker, EntityPicker<Produkt> produktPicker,EntityPicker<Pfandwert> pfandwertPicker, ConsoleReader consoleReader, ConsolePrinter consolePrinter){
         this.getraenkeusecases = getraenkeusecases;
         this.consoleUtils = consoleUtils;
         this.kundenUsecases = kundenUsecases;
+        this.kundenPicker = kundenPicker;
+        this.produktPicker = produktPicker;
+        this.pfandwertPicker = pfandwertPicker;
+        this.consoleReader = consoleReader;
+        this.consolePrinter = consolePrinter;
         registrar.registerCommands(this);
     }
 
     @ICommand(value = "addpfandwert", category = "getraenke")
     public void handleAddPfandWertInput() {
         System.out.println("Add new Pfand value to existing");
-        String description = consoleUtils.readStringInputWithPrompt("Description: ");
-        Double value = consoleUtils.readDoubleInputWithPrompt("Value: ");
-        if(!consoleUtils.acceptInput()){
+        String description = consoleReader.readStringInputWithPrompt("Description: ");
+        Double value = consoleReader.readDoubleInputWithPrompt("Value: ");
+        if(!consoleReader.acceptInput()){
             return;
         }
         try {
@@ -52,14 +65,16 @@ public class GetraenkeInputHandler {
     
     @ICommand(value = "setpfandwert", category = "getraenke")
     public void handleSetPfandwertInput() {
-        Optional<Pfandwert> pfandwerOptional = consoleUtils.pickOnePfandwertFromAllPfandwerts();
-        if(pfandwerOptional.isEmpty()){
+        Iterable<Pfandwert> iterable = getraenkeusecases.getAllPfandwerte();
+        List<Pfandwert> pfandwertList = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+        Optional<Pfandwert> pfandwertOptional = pfandwertPicker.pickOneFromList(pfandwertList, Pfandwert::toString);
+        if(pfandwertOptional.isEmpty()){
             consoleUtils.errorNoPfandWert();
             return;
         }
-        Pfandwert pfandwert = pfandwerOptional.get();
-        double newValue = consoleUtils.readDoubleInputWithPrompt("New Value for Pfandwert: ");
-        if(!consoleUtils.acceptInput()){
+        Pfandwert pfandwert = pfandwertOptional.get();
+        double newValue = consoleReader.readDoubleInputWithPrompt("New Value for Pfandwert: ");
+        if(!consoleReader.acceptInput()){
             return;
         }
         try {
@@ -74,14 +89,20 @@ public class GetraenkeInputHandler {
     
     @ICommand(value = "setpfandwertprodukt", category = "getraenke")
     public void handleSetPfandwertProduktInput() {
-        Optional<Pfandwert> pfandwertOptional = consoleUtils.pickOnePfandwertFromAllPfandwerts();
+        Iterable<Pfandwert> iterablePfandwert = getraenkeusecases.getAllPfandwerte();
+        List<Pfandwert> pfandwertList = StreamSupport.stream(iterablePfandwert.spliterator(), false).collect(Collectors.toList());
+        Optional<Pfandwert> pfandwertOptional = pfandwertPicker.pickOneFromList(pfandwertList, Pfandwert::toString);
+
         if (pfandwertOptional.isEmpty()) {
             consoleUtils.errorNoPfandWert();
             return;
         }
         Pfandwert pfandwert = pfandwertOptional.get();
 
-        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
+
+        Iterable<Produkt> iterableProdukt = getraenkeusecases.getAllProducts();
+        List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
+        Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
             consoleUtils.errorNoProdukt();
             return;
@@ -109,7 +130,7 @@ public class GetraenkeInputHandler {
         }
         int count = 1;
         for(Pfandwert pfandwert : pfandwertList){
-            consoleUtils.printPfandwertWithNumber(pfandwert, count);
+            consolePrinter.printPfandwertWithNumber(pfandwert, count);
             count++;
         }
     }
@@ -117,7 +138,7 @@ public class GetraenkeInputHandler {
     
     @ICommand(value = "getpfandwert", category = "getraenke")
     public void handleGetPfandWertInput() {
-        String uuidString = consoleUtils.readStringInputWithPrompt("UUID of Pfandwert: ");
+        String uuidString = consoleReader.readStringInputWithPrompt("UUID of Pfandwert: ");
         UUID uuid = null;
         try {
             uuid = UUID.fromString(uuidString);    
@@ -134,7 +155,7 @@ public class GetraenkeInputHandler {
             consoleUtils.errorNoPfandWert();
             return;
         }
-        consoleUtils.printPfandwertWithNumber(pfandwert.get(), 1);
+        consolePrinter.printPfandwertWithNumber(pfandwert.get(), 1);
     }
 
     
@@ -149,14 +170,16 @@ public class GetraenkeInputHandler {
         }
         int count = 1;
         for(Produkt produkt : productList){
-            consoleUtils.printProduktWithNumber(produkt, count);
+            consolePrinter.printProduktWithNumber(produkt, count);
             count++;
         }
     }
     
     @ICommand(value = "getpriceforprodukt", category = "getraenke")
     public void handleGetPriceForProduktInput() {
-        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
+        Iterable<Produkt> iterableProdukt = getraenkeusecases.getAllProducts();
+        List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
+        Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
             consoleUtils.errorNoProdukt();
             return;
@@ -169,7 +192,9 @@ public class GetraenkeInputHandler {
     
     @ICommand(value = "getpricehistoryforprodukt", category = "getraenke")
     public void handleGetPriceHistoryForProduktInput() {
-        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
+        Iterable<Produkt> iterableProdukt = getraenkeusecases.getAllProducts();
+        List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
+        Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
             consoleUtils.errorNoProdukt();
             return;
@@ -185,14 +210,16 @@ public class GetraenkeInputHandler {
 
     @ICommand(value = "setpriceforprodukt", category = "getraenke")
     public void handleSetPriceForProduktInput() {
-        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
+        Iterable<Produkt> iterableProdukt = getraenkeusecases.getAllProducts();
+        List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
+        Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
             consoleUtils.errorNoProdukt();
             return;
         }
         Produkt produkt = produktOptional.get();
-        int newPrice = consoleUtils.readIntInputWithPrompt("Input new price for product: ");
-        if(!consoleUtils.acceptInput()){
+        int newPrice = consoleReader.readIntInputWithPrompt("Input new price for product: ");
+        if(!consoleReader.acceptInput()){
             return;
         }
         getraenkeusecases.setPriceForProdukt(produkt, newPrice);
@@ -200,7 +227,9 @@ public class GetraenkeInputHandler {
 
     @ICommand(value = "getstockamountforprodukt", category = "getraenke")
     public void handleGetStockAmountForProduktInput() {
-        Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
+        Iterable<Produkt> iterableProdukt = getraenkeusecases.getAllProducts();
+        List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
+        Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
         if(produktOptional.isEmpty()){
             consoleUtils.errorNoProdukt();
             return;
@@ -213,12 +242,12 @@ public class GetraenkeInputHandler {
     @ICommand(value = "addprodukt", category = "getraenke")
     public void handleAddProduktInput() {
         System.out.println("Add Product to existing Products");
-        String name = consoleUtils.readStringInputWithPrompt("Name: ");
-        String beschreibung = consoleUtils.readStringInputWithPrompt("Describtion: ");
-        String kategorie = consoleUtils.readStringInputWithPrompt("Categorie: ");
-        int price = consoleUtils.readIntInputWithPrompt("Price: ");
+        String name = consoleReader.readStringInputWithPrompt("Name: ");
+        String beschreibung = consoleReader.readStringInputWithPrompt("Describtion: ");
+        String kategorie = consoleReader.readStringInputWithPrompt("Categorie: ");
+        int price = consoleReader.readIntInputWithPrompt("Price: ");
 
-        if(!consoleUtils.acceptInput()){
+        if(!consoleReader.acceptInput()){
             return;
         }
         try {
@@ -232,7 +261,7 @@ public class GetraenkeInputHandler {
     
     @ICommand(value = "getproduct", category = "getraenke")
     public void handleGetProductInput() {
-        String uuidString = consoleUtils.readStringInputWithPrompt("UUID for product: ");
+        String uuidString = consoleReader.readStringInputWithPrompt("UUID for product: ");
         UUID uuid = null;
         try {
             uuid = UUID.fromString(uuidString);
@@ -260,21 +289,25 @@ public class GetraenkeInputHandler {
 
     @ICommand(value = "addbestellung", category = "getraenke")
     public void handleAddBestellungInput() {
-        Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
+        Iterable<Kunde> iterable = kundenUsecases.getAllKunden();
+        List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+        Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
             consoleUtils.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
-        int amountProdukts = consoleUtils.readIntInputWithPrompt("How many Products do you want to add: ");
+        int amountProdukts = consoleReader.readIntInputWithPrompt("How many Products do you want to add: ");
         List<Triple<Produkt, Integer, Double>> bestellungsList = new ArrayList<>();
         for(int i = 0; i < amountProdukts; i++){
             while(true){
                 try {
                     System.out.println("Produkt number :"+ (i+1));
-                    Optional<Produkt> produktOptional = consoleUtils.pickOneProductFromAllProducts();
-                    int amount = consoleUtils.readIntInputWithPrompt("Wie viele Produkte: ");
-                    Double value = consoleUtils.readDoubleInputWithPrompt("Wie viel kostetet das Produkt: ");
+                    Iterable<Produkt> iterableProdukt = getraenkeusecases.getAllProducts();
+                    List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
+                    Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
+                    int amount = consoleReader.readIntInputWithPrompt("Wie viele Produkte: ");
+                    Double value = consoleReader.readDoubleInputWithPrompt("Wie viel kostetet das Produkt: ");
                     bestellungsList.add(new Triple<Produkt,Integer,Double>(produktOptional.get(), amount, value));
                     break;
                 } catch (Exception e) {
@@ -293,14 +326,16 @@ public class GetraenkeInputHandler {
 
     @ICommand(value = "addzahlungsvorgang", category = "getraenke")
     public void handleAddZahlungsvorgangInput() {
-        Optional<Kunde> kundeOptional = consoleUtils.pickOneUserFromAllUsers();
+        Iterable<Kunde> iterable = kundenUsecases.getAllKunden();
+        List<Kunde> kundenListe = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+        Optional<Kunde> kundeOptional = kundenPicker.pickOneFromList(kundenListe, Kunde::toString);
         if(kundeOptional.isEmpty()){
             consoleUtils.errorNoKunden();
             return;
         }
         Kunde kunde = kundeOptional.get();
-        String zahlungsWeString = consoleUtils.readStringInputWithPrompt("Zahlungsweg: ");
-        Double betrag = consoleUtils.readDoubleInputWithPrompt("Betrag: ");
+        String zahlungsWeString = consoleReader.readStringInputWithPrompt("Zahlungsweg: ");
+        Double betrag = consoleReader.readDoubleInputWithPrompt("Betrag: ");
         LocalDateTime localDateTime = LocalDateTime.now();
         
         try {

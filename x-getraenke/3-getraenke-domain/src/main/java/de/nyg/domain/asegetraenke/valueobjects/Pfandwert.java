@@ -16,4 +16,9 @@ public final class Pfandwert extends EntityWrapper<Pfandwert> {
         this.beschreibung = beschreibung;
         creationDate =  LocalDateTime.now();
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s",this.wert, this.beschreibung, this.creationDate);
+    }
 }
