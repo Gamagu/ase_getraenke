@@ -60,4 +60,16 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
     public String toString() {
         return String.format("%s (%s,  %s) %.2f", name, kategorie, beschreibung, preis.getPrice());
     }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getBeschreibung(){
+        return beschreibung;
+    }
+
+    public String getKategorie() {
+        return kategorie;
+    }
 }

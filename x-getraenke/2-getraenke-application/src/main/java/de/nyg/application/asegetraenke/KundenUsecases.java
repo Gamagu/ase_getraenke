@@ -20,10 +20,9 @@ public class KundenUsecases {
         this.crepo = crepo;
     }
 
-    public Kunde createKunde(String name, String nachname, String eMail){
-        Kunde k = new Kunde(name, nachname, eMail);
-        crepo.addKunde(k);
-        return k;
+    public Kunde createKunde(Kunde kunde){
+        crepo.addKunde(kunde);
+        return kunde;
     }
 
     public Iterable<Kunde> getAllKunden(){

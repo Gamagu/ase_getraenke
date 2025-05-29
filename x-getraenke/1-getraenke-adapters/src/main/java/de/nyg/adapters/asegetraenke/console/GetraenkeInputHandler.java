@@ -11,6 +11,7 @@ import java.util.stream.StreamSupport;
 
 import de.nyg.application.asegetraenke.GetraenkeUsecases;
 import de.nyg.application.asegetraenke.KundenUsecases;
+import de.nyg.application.asegetraenke.builder.ProduktBuilder;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.ICommand;
 import de.nyg.adapters.asegetraenke.console.utils.ConsoleError;
@@ -243,15 +244,20 @@ public class GetraenkeInputHandler {
     public void handleAddProduktInput() {
         System.out.println("Add Product to existing Products");
         String name = consoleReader.readStringInputWithPrompt("Name: ");
-        String beschreibung = consoleReader.readStringInputWithPrompt("Describtion: ");
-        String kategorie = consoleReader.readStringInputWithPrompt("Categorie: ");
-        int price = consoleReader.readIntInputWithPrompt("Price: ");
+        String beschreibung = consoleReader.readStringInputWithPrompt("Beschreibung: ");
+        String kategorie = consoleReader.readStringInputWithPrompt("Kategorie: ");
+        Double price = consoleReader.readDoubleInputWithPrompt("Preis: ");
 
         if(!consoleReader.acceptInput()){
             return;
         }
         try {
-            getraenkeusecases.addProdukt(name, beschreibung, kategorie, price);    
+            Produkt produkt = new ProduktBuilder()
+                .withName(name)
+                .withBeschreibung(beschreibung)
+                .withKategorie(kategorie)
+                .build();
+            getraenkeusecases.addProdukt(produkt, price);    
         } catch (Exception e) {
             System.out.println("An error occured while adding a new product");
             System.err.println(e.getMessage());

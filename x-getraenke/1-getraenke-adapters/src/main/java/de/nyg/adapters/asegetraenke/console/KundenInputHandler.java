@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import de.nyg.application.asegetraenke.KundenUsecases;
+import de.nyg.application.asegetraenke.builder.KundeBuilder;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.CommandRegistrar;
 import de.nyg.adapters.asegetraenke.console.consolefunctionmapping.ICommand;
 import de.nyg.adapters.asegetraenke.console.utils.ConsoleError;
@@ -14,6 +15,7 @@ import de.nyg.adapters.asegetraenke.console.utils.ConsoleReader;
 import de.nyg.adapters.asegetraenke.console.utils.EntityPicker;
 import de.nyg.domain.asegetraenke.entities.Bestellung;
 import de.nyg.domain.asegetraenke.entities.Kunde;
+
 
 public class KundenInputHandler {
     private final KundenUsecases kundeUseCases;
@@ -38,7 +40,12 @@ public class KundenInputHandler {
         String nachname = consoleReader.readStringInputWithPrompt("Nachname: ");    
         String eMail = consoleReader.readStringInputWithPrompt("E-Mail: ");
         if(consoleReader.acceptInput()){
-            kundeUseCases.createKunde(name, nachname, eMail);
+            Kunde neuerKunde = new KundeBuilder()
+                               .withName(name)
+                               .withNachname(nachname)
+                               .withEmail(eMail)
+                               .build();
+            kundeUseCases.createKunde(neuerKunde);
             System.out.println("Kunde was created succesfully");
         }
     }

@@ -27,4 +27,13 @@ public class Kunde extends EntityWrapper<Kunde>{
     public String getMail(){
         return mail;
     }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getNachname(){
+        return nachname;
+    }
+
 }

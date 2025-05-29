@@ -1,5 +1,6 @@
 package de.nyg.adapters.asegetraenke.console;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -25,7 +27,6 @@ import de.nyg.adapters.asegetraenke.console.utils.ConsoleReader;
 import de.nyg.adapters.asegetraenke.console.utils.EntityPicker;
 import de.nyg.domain.asegetraenke.entities.Kunde;
 import de.nyg.domain.asegetraenke.entities.Produkt;
-import de.nyg.domain.asegetraenke.util.Triple;
 import de.nyg.domain.asegetraenke.valueobjects.Pfandwert;
 import de.nyg.domain.asegetraenke.valueobjects.Preis;
 
@@ -137,15 +138,27 @@ public class GetraenkeInputHandlerTest {
     @Test
     public void testHandleAddProduktInput() throws Exception {
         when(consoleReader.readStringInputWithPrompt("Name: ")).thenReturn("Name");
-        when(consoleReader.readStringInputWithPrompt("Describtion: ")).thenReturn("Beschreibung");
-        when(consoleReader.readStringInputWithPrompt("Categorie: ")).thenReturn("Kategorie");
-        when(consoleReader.readIntInputWithPrompt("Price: ")).thenReturn(10);
+        when(consoleReader.readStringInputWithPrompt("Beschreibung: ")).thenReturn("Beschreibung");
+        when(consoleReader.readStringInputWithPrompt("Kategorie: ")).thenReturn("Kategorie");
+        when(consoleReader.readDoubleInputWithPrompt("Preis: ")).thenReturn(10.0);
         when(consoleReader.acceptInput()).thenReturn(true);
 
         handler.handleAddProduktInput();
 
-        verify(getraenkeUsecases).addProdukt("Name", "Beschreibung", "Kategorie", 10);
+        ArgumentCaptor<Produkt> produktCaptor = ArgumentCaptor.forClass(Produkt.class);
+        ArgumentCaptor<Double> preisCaptor = ArgumentCaptor.forClass(Double.class);
+
+        verify(getraenkeUsecases).addProdukt(produktCaptor.capture(), preisCaptor.capture());
+
+        Produkt produkt = produktCaptor.getValue();
+        double preis = preisCaptor.getValue();
+
+        assertEquals(10.0, preis);
+        assertEquals("Name", produkt.getName());
+        assertEquals("Beschreibung", produkt.getBeschreibung());
+        assertEquals("Kategorie",produkt.getKategorie());
     }
+
 
     @Test
     public void testHandleSetPfandwertProduktInput_successful() throws Exception {

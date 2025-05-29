@@ -104,8 +104,7 @@ public class GetraenkeUsecases{
                 .getProdukte().filter(p -> p.getProdukt().equals(product)).mapToInt(p -> p.getMenge()).sum()).sum();
     }
 
-     public void addProdukt(String name, String beschreibung, String kategorie, double preis) throws Exception{
-         Produkt produkt = new Produkt(name, beschreibung, kategorie);
+    public void addProdukt(Produkt produkt, double preis) throws Exception{
         Preis p = new Preis(preis, produkt);
         produkt.setPreis(p, grepo);
     }

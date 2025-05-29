@@ -1,8 +1,8 @@
 package de.nyg.adapters.asegetraenke.console;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
@@ -14,6 +14,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -75,24 +76,28 @@ public class KundenInputHandlerTest {
 
     @Test
     public void testHandleCreateKundeInput() {
-        // Mock the interactions
-        when(mockedKundeusecases.createKunde(anyString(), anyString(),anyString())).thenReturn(null);
         when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
         when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
         when(mockedConsoleReader.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
         when(mockedConsoleReader.acceptInput()).thenReturn(true);
 
-        // Perform the action
+        // Aktion ausführen
         kundenInputHandler.handleCreateKundeInput();
-        
-        // Verify that the method was called with expected arguments
-        verify(mockedKundeusecases).createKunde( TESTNAME, TESTNACHNAME, TESTEMAIL); 
+
+        // Eingefangenes Argument prüfen
+        ArgumentCaptor<Kunde> kundeCaptor = ArgumentCaptor.forClass(Kunde.class);
+        verify(mockedKundeusecases).createKunde(kundeCaptor.capture());
+
+        Kunde captured = kundeCaptor.getValue();
+        assertEquals(TESTNAME, captured.getName());
+        assertEquals(TESTNACHNAME, captured.getNachname());
+        assertEquals(TESTEMAIL, captured.getMail());
     }
 
     @Test
     public void testHandleCreateKundeInputNoAccept() {
         // Mock 
-        when(mockedKundeusecases.createKunde(anyString(), anyString(),anyString())).thenReturn(null);
+        when(mockedKundeusecases.createKunde(any())).thenReturn(null);
         when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNAME)).thenReturn(TESTNAME);
         when(mockedConsoleReader.readStringInputWithPrompt(PROMPTNACHNAME)).thenReturn(TESTNACHNAME);
         when(mockedConsoleReader.readStringInputWithPrompt(PROMPTEMAIL)).thenReturn(TESTEMAIL);
