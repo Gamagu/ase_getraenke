@@ -317,6 +317,8 @@ Wenn wir nun die Erweiterung der Elemente erlauben z.B. anhand von `ReadManagerI
 		
 ```
 `Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+
+Verbessert in : `Commit Stand: 5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
 ### 3.2 Interface Segregation Principle (ISP)
 
 #### 3.2.1 Positives Beispiel `KundenInputHandler`
@@ -344,7 +346,7 @@ classDiagram
 	KundenInputHandler --> IConsoleUtils
 	KundenInputHandler --> ICommandRegistrar
 ```
-
+`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
 #### 3.1.2 Negatives Beispiel `CommandRegistrar`
 Die Klasse `ConsoleUtils` verstößt gegen das Interface Segregation Principle, da sie Methoden für ganz unterschiedliche Aufgaben bündelt: Einlesen, Ausgabe, Auswahl und Fehlerbehandlung. Dadurch werden andere Klassen gezwungen, ein breites Interface zu kennen und ggf. zu verwenden, auch wenn sie nur Teilfunktionalität brauchen.
 ```mermaid
@@ -563,80 +565,617 @@ Die Kopplung kann durch die Aufspaltung in **spezialisierte Komponenten** deutli
 - `WriteManager` (für Ausgaben)
 - `ErrorManager` (für Fehlerhandling)
 Jede dieser Komponenten hängt dann nur noch von einem spezifischen Teil ab – und kann unabhängig weiterentwickelt oder getestet werden.
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
-### GRASP: High Cohesion
 
-#### Positives Beispiel  `KundenInputHandler`
-Die Klasse `KundenInputHandler` weist eine **hohe Kohäsion** auf, da sie sich ausschließlich um die Eingabe- und Ausgabe-Logik für Kundenfunktionen kümmert. Alle Methoden betreffen Interaktionen mit dem Nutzer im Kontext von Kundenoperationen – also z. B. Kunden erstellen, anzeigen oder deren Balance abrufen.
+`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f` 
+
+Verbessert in `Commit Stand: 5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
+
+### GRASP: High Cohesion `ConsoleUtils`
+
 ```mermaid 
 classDiagram
-	class KundenInputHandler {
+class ConsoleUtils {
+		- Scanner scanner
+		- IGetraenkeUsecases getraenkeUseCases
 		- IKundenUsecases kundeUseCases
-		- IConsoleUtils consoleUtils
 
-		+ void handleCreateKundeInput()
-		+ void handleGetAllKundenInput()
-		+ void handleSetNameInput()
-		+ void handleGetKundeInput()
-		+ void handleGetKundenBalanceInput()
-		+ void handleGetAllBestellungenInput()
+		+ Optional pickOneProductFromAllProducts()
+		+ Optional pickOnePfandwertFromAllPfandwerts()
+		+ Optional pickOneUserFromAllUsers()
+		+ void printProduktWithNumber(Produkt produkt, int number)
+		+ void printPfandwertWithNumber(Pfandwert pfandwert, int number)
+		+ void printKundeWithNumber(Kunde kunde, int number)
+		+ int readIntInputWithPrompt(String prompt)
+		+ Double readDoubleInputWithPrompt(String prompt)
+		+ String readStringInputWithPrompt(String prompt)
+		+ boolean acceptInput()
+		+ void errorNoPfandWert()
+		+ void errorNoKunden()
+		+ void errorNoProdukt()
 	}	
 ```
 `Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
-#### Negatives Beispiel `GetraenkeRepositoryImpl`
-Die Klasse `GetraenkeRepositoryImpl` ist ein klassisches Beispiel für **niedrige Kohäsion**. Sie verwaltet nicht nur eine einzelne Entität, sondern bündelt die Datenzugriffe für mehrere unterschiedliche Typen:
-- `Produkt`
-- `Pfandwert`
-- `Bestellung`
-- `Lieferung`
-- `Preis`
 
-Dadurch ist sie für sehr unterschiedliche Domänenobjekte zuständig – das macht sie schwer wartbar, weniger verständlich und problematisch bei Änderungen.
+#### Begründung
+
+Die ursprüngliche Klasse `ConsoleUtils` wies eine zu breite Verantwortlichkeit auf: Sie kombinierte Eingabe- und Ausgabelogik, Fehlerbehandlung sowie die Auswahl von Entitäten. Dies führte zu niedriger Kohäsion und erschwerte die Wartbarkeit und Wiederverwendbarkeit.
+Im Refactoring wurde `ConsoleUtils` in vier klar abgegrenzte Klassen aufgeteilt:
+- `ConsoleReader`: Verantwortlich für das Einlesen und Validieren von Benutzereingaben.
+- `ConsolePrinter`: Zuständig für die formatierte Ausgabe von Domänenobjekten.
+- `ConsoleError`: Kapselt die Darstellung von Fehlermeldungen.
+- `EntityPicker`: Bietet generische Auswahlmechanismen aus Listen, unabhängig vom konkreten Typ.
+Jede dieser Klassen konzentriert sich auf eine eng umrissene Aufgabe und verwendet nur die dafür relevanten Attribute und Methoden.
+
+#### Vorteile hoher Kohäsion
+Durch die klare Trennung der Verantwortlichkeiten entstehen Klassen mit hoher Kohäsion: Jede Klasse enthält nur Methoden, die logisch und semantisch zusammengehören. Dies führt zu:
+- **Besserer Lesbarkeit**: Die Intention der Klassen ist sofort erkennbar.
+- **Einfacherer Wiederverwendung**: Komponenten wie `ConsoleReader` oder `EntityPicker` können auch in anderen Kontexten (z. B. Tests, anderer UI) verwendet werden.
+- **Erhöhter Testbarkeit**: Die modularen Klassen lassen sich gezielt und unabhängig voneinander testen.
+- **Reduzierter Wartungsaufwand**: Änderungen in der Eingabe- oder Ausgabelogik betreffen nur einzelne, klar abgegrenzte Klassen.
+
+#### Technische Metriken
+Nach dem Refactoring hat jede der vier Klassen:
+- Eine überschaubare Anzahl an Methoden
+- Eine einheitliche Schnittstelle
+- Eine enge Nutzung ihrer Attribute (z. B. `scanner` nur in `ConsoleReader`)
+Dies sind Indikatoren für eine **hohe Kohäsion** im Sinne von GRASP. Die neue Struktur verbessert die Modularität der Konsoleninteraktion signifikant.
+
+```mermaid 
+classDiagram
+class ConsoleError {
+		+ void errorNoPfandWert()
+		+ void errorNoKunden()
+		+ void errorNoProdukt()
+	}
+	
+class EntityPicker {
+	- ConsoleReader consoleReader
+	+ public Optional pickOneFromList(List list, Function(T, String) labelFunction) 
+}
+```
+```mermaid 
+classDiagram
+class ConsoleReader {
+	- Scanner scanner 
+	+ int readIntInputWithPrompt(String prompt)
+	+ Double readDoubleInputWithPrompt(String prompt)
+	+ String readStringInputWithPrompt(String prompt)
+	+ boolean acceptInput()
+}
+
+class ConsolePrinter {
+	+ void printProduktWithNumber(Produkt produkt, int number)
+	+ void printPfandwertWithNumber(Pfandwert pfandwert, int number)
+	+ void printKundeWithNumber(Kunde kunde, int number)
+}
+```
+`Commit Stand: 5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
+### Dont Repeat Yourself (DRY
+#### Begründung
+
+Die ursprüngliche Implementierung der Klasse `ConsoleUtils` verstieß gegen das **DRY-Prinzip (Don't Repeat Yourself)**, da mehrfach identische oder stark ähnliche Logik zur Auswahl und Ausgabe von Entitäten implementiert wurde. Die folgenden Methoden zeigen dieses Muster deutlich:
+
+```java
+
+public Optional<Produkt> pickOneProductFromAllProducts() { ... } 
+public Optional<Pfandwert> pickOnePfandwertFromAllPfandwerts() { ... } 
+public Optional<Kunde> pickOneUserFromAllUsers() { ... }  
+
+public void printProduktWithNumber(Produkt produkt, int number) { ... } 
+public void printPfandwertWithNumber(Pfandwert pfandwert, int number) { ... } 
+public void printKundeWithNumber(Kunde kunde, int number) { ... }`
+```
+`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+
+Diese Methoden unterscheiden sich fast ausschließlich im Typ der verwendeten Entität, folgen jedoch demselben strukturellen Ablauf (z. B. Listen-Auswahl oder nummerierte Ausgabe).
+
+#### Refactoring zur Vermeidung von Redundanz
+
+Zur Auflösung der Wiederholungen wurde die generische Hilfsklasse `EntityPicker<T>` eingeführt. Sie kapselt die wiederkehrende Logik zur Auswahl eines Elements aus einer Liste und ist auf verschiedene Typen anwendbar:
+
+```java
+public Optional<T> pickOneFromList(List<T> list, Function<T, String> labelFunction)`
+```
+`Commit Stand: 5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
+
+
+Die Methode verwendet einen `Function<T, String>`, um eine flexible Beschriftung für beliebige Objekte zu ermöglichen. Dadurch kann dieselbe Methode sowohl für Produkte, Pfandwerte als auch Kunden verwendet werden.
+
+#### Vorteile dieses Refactoring
+- **Weniger Redundanz**: Wiederverwendbare generische Logik ersetzt mehrfach implementierten Code.
+- **Erhöhte Erweiterbarkeit**: Neue Entitätstypen können mit minimalem Mehraufwand eingebunden werden.
+- **Geringere Kopplung**: Die Logik zur Benutzerauswahl ist entkoppelt von spezifischen Domänenklassen.
+- **Bessere Testbarkeit**: Die Auswahl-Logik ist isoliert und kann unabhängig getestet werden.
+
+#### Technische Metriken
+Die Anzahl der Methoden in `ConsoleUtils` wurde signifikant reduziert. Die generische `EntityPicker`-Klasse wird mehrfach verwendet und erfüllt somit das DRY-Prinzip auf effektive Weise und ersetzt die drei vorherigen Funktionen. 
+
+## 5. Design Pattern 
+### 5.1 Builder Pattern 
+Das Builder Pattern wird verwendet, um die Erstellung von `Kunde`-Objekten zu strukturieren. Gerade bei mehreren Parametern wie Name, Nachname und E-Mail wird dadurch die **Lesbarkeit erhöht** und die Fehleranfälligkeit durch falsche Parameterreihenfolgen reduziert.
+
 ```mermaid
 classDiagram
-	class GetraenkeRepositoryImpl {
-		- RepositoryData data
 
-		+ Iterable<Produkt> getProdukte()
-		+ void addProdukt(Produkt produkt)
-		+ Optional<Produkt> getProdukt(UUID id)
+class Kunde {
+    - String name
+    - String nachname
+    - String email
+    + getName(): String
+    + getNachname(): String
+    + getEmail(): String
+    + setName(String, String): void
+    + setEmail(String): void
+}
 
-		+ Iterable<Pfandwert> getPfandwerte()
-		+ void addPfandwert(Pfandwert pfandwert)
-		+ Optional<Pfandwert> getPfandwert(UUID id)
+class KundeBuilder {
+    - String name
+    - String nachname
+    - String email
+    + withName(String): KundeBuilder
+    + withNachname(String): KundeBuilder
+    + withEmail(String): KundeBuilder
+    + build(): Kunde
+}
 
-		+ Iterable<Bestellung> getBestellungen()
-		+ void addBestellung(Bestellung bestellung)
-		+ Optional<Bestellung> getBestellungen(Kunde kunde)
-		+ Bestellung getBestellungen(UUID id)
+class KundenInputHandler{
+	+ createKunde()
+	...
+}
 
-		+ void addPreis(Preis preis)
-		+ Optional<Preis> getPreis(Priced, double, LocalDateTime)
-		+ Iterable<Preis> getPreisForProdukt(Produkt produkt)
+class KundenUsecases {
+	...
+}
 
-		+ void addLieferung(Lieferung lieferung)
-		+ Iterable<Lieferung> getLieferungen()
-		+ Iterable<Lieferung> getLieferungen(Produkt produkt)
-		+ Iterable<Lieferung> getLieferungen(int lieferId)
-
-		+ void safe()
-	}
+KundeBuilder --> Kunde 
+KundenInputHandler --> KundeBuilder
+KundenUsecases --> Kunde 
+KundenInputHandler --> KundenUsecases
 
 ```
-**Analyse**
-Die Klasse enthält Methoden für 5 unterschiedliche Entitäten und verfügt über keinen klare fachliche Fokusierung, wie z.B. nur das erstellen neuer Objekte. Weswegen das Prinzip eine Klasse eine Aufgabe verletzt wird.
-
-Durch die große Anzahl an Entitäten kommt es auch dazu das diese Klasse bei Änderungen der Entitäten auch überarbeitet werden muss. 
-
-**Lösungsvorschlag**
-Die Klasse sollte in spezialisierte Repositories aufgeteilt werden:
-- `ProduktRepositoryImpl`
-- `PfandwertRepositoryImpl`
-- `BestellungRepositoryImpl`
-- `PreisRepositoryImpl`
-- `LieferungRepositoryImpl`
-
-Jede dieser Klassen hätte eine **klare Verantwortlichkeit** und wäre leichter testbar und wartbar. 
 
 
-### Dont Repeat Yourselfe (DRY)
+### 5.2 Strategy Pattern
+Das Strategy Pattern wird im Projekt verwendet, um verschiedene Interaktionen mit Benutzereingaben flexibel zu gestalten. Beispielsweise nutzt `EntityPicker<T>` das Strategy-Prinzip, indem es die Anzeige und Auswahl von Objekten generisch hält und das Labeling über eine **konfigurierbare Strategie** (`Function<T, String>`) erlaubt.
+
+So kann z. B. ein Produkt anders dargestellt werden als ein Kunde, **ohne dass der Auswahlmechanismus verändert werden muss**. 
+
+```mermaid
+classDiagram
+class EntityPicker~T~ {
+    - ConsoleReader consoleReader
+    + Optional~T~ pickOneFromList(List~T~, Function~T, String~ labelFunction)
+}
+
+class KundenInputHandler {
+	+ void createKunde()
+}
+
+class Kunde {
+	+ toString()
+}
+
+class Produkt {
+	+ toString()
+}
+
+class Pfandwert {
+	+ toString()
+}
+
+EntityPicker --> Kunde : uses
+EntityPicker --> Produkt : uses
+EntityPicker --> Pfandwert : uses
+KundenInputHandler --> EntityPicker
+
+```
+
+## 6. Domain Driven Design (DDD)
+Rücksprache mit Niklas 
+
+## 7. Unit Tests 
+
+### 7.1 Zehn Unit Tests - Tabelle 
+Niklas 
+### 7.2 ATRIP
+Niklas 
+
+### 7.3 Code Coverage 
+Um die Qualität und Korrektheit der Anwendung sicherzustellen, wurden für die zentralen Use Cases Unit Tests geschrieben. Ein zentrales Ziel war es, eine möglichst hohe Testabdeckung (Code Coverage) in den **Anwendungsfällen (Usecases)** zu erreichen, da diese die Kernlogik des Systems abbilden. Die Code Coverage wurde mit Hilfe des Maven-Plug-ins `jacoco-maven-plugin` gemessen.
+
+Die Coverage-Metrik gibt an, wie viel Prozent des Quellcodes durch Tests tatsächlich ausgeführt werden. Dabei gilt: Eine hohe Abdeckung allein garantiert keine Fehlerfreiheit, ist jedoch ein wichtiger Indikator für die Testtiefe und -qualität. Wichtig ist auch zu erwähnen das Tests nie beweisen können, das Software Fehlerfrei ist nur, dass ein Fehler vorliegt.
+
+Die Tests konzentrieren sich hauptsächlich auf die Anwendungsschicht (Layer `getraenkeapplication`). Diese enthält die Klassen:
+- `GetraenkeUsecases`
+- `KundenUsecases`
+
+Die Coverage-Berichte zeigen, dass diese Klassen zu einem großen Teil durch automatisierte Tests abgedeckt sind. Besonders häufig getestete Methoden sind:
+- `createKunde(...)`, `getKundenBalance(...)`
+- `addProdukt(...)`, `getStockAmountForProdukt(...)`, `setPriceForProdukt(...)`
+
+### 7.4 Fakes und Mocks
+
+####  7.4.1 Mock-Objekt: `Repo`
+Niklas 
+
+#### 7.4.2 `KundenInputHandler`
+In den Tests des `KundenInputHandler` werden alle externen Abhängigkeiten durch **Mock-Objekte** ersetzt. Dies ermöglicht eine **isolierte Testbarkeit** der Benutzereingabe-Logik, ohne auf die reale Implementierung der Geschäftslogik oder auf tatsächliche Benutzereingaben angewiesen zu sein. Durch das mocken der der Abhänigkeiten ist der Test vollkommen isoliert von Benutzereingaben oder anderen Methoden. 
+
+Zu den gemockten Abhängigkeiten zählen:
+- `KundenUsecases` – zentrale Geschäftsanwendungsfälle
+- `ConsoleReader` – zum Einlesen von Benutzereingaben
+- `ConsolePrinter` – für formatierte Ausgaben
+- `ConsoleError` – für Fehlerausgaben
+- `EntityPicker<Kunde>` – zur Auswahl von Kunden
+- `CommandRegistrar` – zur Registrierung von Befehlen
+
+```mermaid
+classDiagram
+    class KundenInputHandler {
+        - KundenUsecases kundenUsecases
+        - ConsoleError consoleError
+        - CommandRegistrar commandRegistrar
+        - EntityPicker~Kunde~ kundenPicker
+        - ConsoleReader consoleReader
+        - ConsolePrinter consolePrinter
+        + void handleCreateKundeInput()
+        + void handleSetNameInput()
+        + void handleGetAllKundenInput()
+        + ...
+    }
+
+    class KundenUsecases {
+        <<interface>>
+        + createKunde(String, String, String)
+        + getAllKunden()
+        + getKunde(String)
+        + getKundenBalance(Kunde)
+        + getAllBestellungen(Kunde)
+        + setName(Kunde, String, String)
+    }
+
+    class ConsoleReader {
+        + readStringInputWithPrompt(String)
+        + acceptInput()
+    }
+
+    class ConsolePrinter {
+        + printKundeWithNumber(Kunde, int)
+    }
+
+    class ConsoleError {
+        + errorNoKunden()
+    }
+
+    class EntityPicker~Kunde~ {
+        + Optional~Kunde~ pickOneFromList(List~Kunde~, Function)
+    }
+
+    class CommandRegistrar {
+        + registerCommand(...)
+    }
+
+    KundenInputHandler --> KundenUsecases : uses
+    KundenInputHandler --> ConsoleError : uses
+    KundenInputHandler --> CommandRegistrar : uses
+    KundenInputHandler --> EntityPicker~Kunde~ : uses
+    KundenInputHandler --> ConsoleReader : uses
+    KundenInputHandler --> ConsolePrinter : uses
+
+```
+
+```java 
+@Test
+public void testHandleCreateKundeInput() {
+    when(mockedKundeusecases.createKunde(anyString(), anyString(),anyString())).thenReturn(null);
+    when(mockedConsoleReader.readStringInputWithPrompt("Name: ")).thenReturn("Max");
+    when(mockedConsoleReader.readStringInputWithPrompt("Nachname: ")).thenReturn("Mustermann");
+    when(mockedConsoleReader.readStringInputWithPrompt("E-Mail: ")).thenReturn("max@example.com");
+    when(mockedConsoleReader.acceptInput()).thenReturn(true);
+
+    kundenInputHandler.handleCreateKundeInput();
+
+    verify(mockedKundeusecases).createKunde("Max", "Mustermann", "max@example.com");
+}
+
+```
+
+**Beschreibung**
+Das Mock-Objekt `KundenUsecases` simuliert die Kundenlogik, um den `KundenInputHandler` **unabhängig von der tatsächlichen Business-Logik** testen zu können. Auch Eingaben über `ConsoleReader` und die Auswahl über `EntityPicker` werden gemockt, um automatisierte Tests ohne Benutzereingabe zu ermöglichen. So kann gezielt überprüft werden, ob der Handler auf Eingaben korrekt reagiert und die erwarteten Usecase-Methoden wie `createKunde()` oder `setName()` aufruft – **ohne echte Implementierungen auszuführen**.
+
+**Ziel**
+Getestet wird ausschließlich die **Verarbeitung der Eingaben und Steuerung des Ablaufs** innerhalb des `KundenInputHandler`. Die tatsächliche Geschäftslogik (wie z. B. Datenbankzugriffe) wird **nicht** aufgerufen.
+## 8. Refactoring 
+
+### 8.1 Code Smells
+#### 8.1.1 Large Class
+Code Beispiel ist die Klasse`ConsoleUtils` in der Adapterschicht. Auf dem Stand `Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`. Diese ist eindeutig zu lange und ist für mehrere Aufgaben zuständig. 
+
+```java
+package de.nyg.adapters.asegetraenke.console.Utils;
+
+
+import java.util.ArrayList;
+...
+
+
+public class ConsoleUtils {
+    private final String NOPRODUKTMESSAGE = "There are no Product/s found";
+    private final String NOPFANDWERTMESSAGE = "There are no Pfandwert/s found";
+    private final String NOKUNDEMESSAGE = "There are no Customer/s found";
+
+    private final Scanner scanner;
+    private final GetraenkeUsecases getraenkeUseCases;
+    private final KundenUsecases kundeUseCases;
+
+    public ConsoleUtils(Scanner scanner, GetraenkeUsecases getraenkeUseCases, KundenUsecases kundeUseCases) {
+        this.scanner = scanner;
+        this.getraenkeUseCases = getraenkeUseCases;
+        this.kundeUseCases = kundeUseCases;
+    }
+
+    public Optional<Produkt> pickOneProductFromAllProducts() {
+        Iterable<Produkt> productVec = getraenkeUseCases.getAllProducts();
+        List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
+                                    .collect(Collectors.toList());
+        if(productList.isEmpty()){
+            return Optional.empty();
+        }
+
+        int count = 1;
+        for(Produkt product : productList) {
+            printProduktWithNumber(product, count);
+        }
+        int indexProdukt = 0;
+        while (true) {
+            indexProdukt = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexProdukt < productList.size()+1 && indexProdukt > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexProdukt +  " is not in the list");
+        }
+        Produkt produkt = productList.get(indexProdukt-1);
+        System.out.println("Chosen Produkt: "+ produkt.toString());
+        return Optional.of(productList.get(indexProdukt-1));
+    }
+
+    public Optional<Pfandwert> pickOnePfandwertFromAllPfandwerts() {
+        Iterable<Pfandwert> pfandwertVec = getraenkeUseCases.getAllPfandwerte();
+        List<Pfandwert> pfandwertList = StreamSupport.stream(pfandwertVec.spliterator(), false)
+                                    .collect(Collectors.toList());
+        if(pfandwertList.isEmpty()){
+            return Optional.empty();
+        }
+
+        int count = 1;
+        for(Pfandwert pfandwert : pfandwertList) {
+            printPfandwertWithNumber(pfandwert, count);
+        }
+        int indexProdukt = 0;
+        while (true) {
+            indexProdukt = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexProdukt < pfandwertList.size()+1 && indexProdukt > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexProdukt +  " is not in the list");
+        }
+        Pfandwert pfandwert = pfandwertList.get(indexProdukt-1);
+        System.out.println("Chosen Produkt: "+ pfandwert.toString());
+        return Optional.of(pfandwertList.get(indexProdukt-1));
+    }
+
+    public Optional<Kunde> pickOneUserFromAllUsers(){
+        Iterable<Kunde> kundenOptVec = this.kundeUseCases.getAllKunden();
+        List<Kunde> kundenList = new ArrayList<Kunde>();
+        kundenList = StreamSupport.stream(kundenOptVec.spliterator(), false).collect(Collectors.toList());
+        int count = 1;
+        for(Kunde kunde : kundenList) {
+            printKundeWithNumber(kunde, count);
+        }
+        int indexCustomer = 0;
+        while (true) {
+            indexCustomer = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexCustomer < kundenList.size()+1 && indexCustomer > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexCustomer +  " is not in the list");
+        }
+        return Optional.of(kundenList.get(indexCustomer-1));
+    }
+    
+    public void printProduktWithNumber(Produkt produkt, int number){
+        System.out.println(number + ". "+ produkt.toString());
+    }
+
+    public void printPfandwertWithNumber(Pfandwert pfandwert, int number){
+        System.out.println(number + ". "+ pfandwert.toString());
+    }
+
+    public void printKundeWithNumber(Kunde kunde, int number){
+        System.out.println(number + ". "+ kunde.toString());
+    } 
+
+    public int readIntInputWithPrompt(String prompt){
+        System.out.print(prompt);
+        while(true){
+            String input = this.scanner.nextLine();
+            try{
+                int inputCastInt = Integer.parseInt(input);
+                return inputCastInt;
+            }catch(Exception e){
+                System.out.println("The input: "+ input+ " can not be translated into a number");
+            }
+        }
+    }
+
+    public Double readDoubleInputWithPrompt(String prompt){
+        System.out.print(prompt);
+        while(true){
+            String input = this.scanner.nextLine();
+            try{
+                double inputCastInt = Double.parseDouble(input);
+                return inputCastInt;
+            }catch(Exception e){
+                System.out.println("The input: "+ input+ " can not be translated into a number");
+            }
+        }
+    }
+
+    public String readStringInputWithPrompt(String ptompString){
+        System.out.print(ptompString);
+        return this.scanner.nextLine();
+    }
+
+    public boolean acceptInput(){
+    ...
+    }
+
+    public void errorNoPfandWert() {
+        System.out.println(NOPFANDWERTMESSAGE);
+    }
+ 
+    public void errorNoKunden() {
+        System.out.println(NOKUNDEMESSAGE);
+    }
+    
+    public void errorNoProdukt() {
+        System.out.println(NOPRODUKTMESSAGE);
+    }
+}
+```
+
+Um die Länge und Komplexität dieser Klasse zu reduzieren wurde sie in 4 Klassen aufgeteilt. 
+```mermaid 
+classDiagram
+class ConsoleError {
+		+ void errorNoPfandWert()
+		+ void errorNoKunden()
+		+ void errorNoProdukt()
+	}
+	
+class EntityPicker {
+	- ConsoleReader consoleReader
+	+ public Optional pickOneFromList(List list, Function(T, String) labelFunction) 
+}
+```
+```mermaid 
+classDiagram
+class ConsoleReader {
+	- Scanner scanner 
+	+ int readIntInputWithPrompt(String prompt)
+	+ Double readDoubleInputWithPrompt(String prompt)
+	+ String readStringInputWithPrompt(String prompt)
+	+ boolean acceptInput()
+}
+
+class ConsolePrinter {
+	+ void printProduktWithNumber(Produkt produkt, int number)
+	+ void printPfandwertWithNumber(Pfandwert pfandwert, int number)
+	+ void printKundeWithNumber(Kunde kunde, int number)
+}
+```
+Dies macht die einzelnen Klassen einfacher zu warten und spezifiziert die eigentliche Aufgabe, als alles in einem Überbegriff `Utils` zu vereinen. 
+
+#### 8.1.2 Duplicate Code 
+
+Am Beispiel des `EntityPicker` dieser vereint 3 Methoden die jeweils eine sehr ähnliche Aufgabe ausführen. 
+```java
+    public Optional<Produkt> pickOneProductFromAllProducts() {
+        Iterable<Produkt> productVec = getraenkeUseCases.getAllProducts();
+        List<Produkt> productList = StreamSupport.stream(productVec.spliterator(), false)
+                                    .collect(Collectors.toList());
+        if(productList.isEmpty()){
+            return Optional.empty();
+        }
+
+        int count = 1;
+        for(Produkt product : productList) {
+            printProduktWithNumber(product, count);
+        }
+        int indexProdukt = 0;
+        while (true) {
+            indexProdukt = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexProdukt < productList.size()+1 && indexProdukt > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexProdukt +  " is not in the list");
+        }
+        Produkt produkt = productList.get(indexProdukt-1);
+        System.out.println("Chosen Produkt: "+ produkt.toString());
+        return Optional.of(productList.get(indexProdukt-1));
+    }
+
+    public Optional<Pfandwert> pickOnePfandwertFromAllPfandwerts() {
+        Iterable<Pfandwert> pfandwertVec = getraenkeUseCases.getAllPfandwerte();
+        List<Pfandwert> pfandwertList = StreamSupport.stream(pfandwertVec.spliterator(), false)
+                                    .collect(Collectors.toList());
+        if(pfandwertList.isEmpty()){
+            return Optional.empty();
+        }
+
+        int count = 1;
+        for(Pfandwert pfandwert : pfandwertList) {
+            printPfandwertWithNumber(pfandwert, count);
+        }
+        int indexProdukt = 0;
+        while (true) {
+            indexProdukt = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexProdukt < pfandwertList.size()+1 && indexProdukt > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexProdukt +  " is not in the list");
+        }
+        Pfandwert pfandwert = pfandwertList.get(indexProdukt-1);
+        System.out.println("Chosen Produkt: "+ pfandwert.toString());
+        return Optional.of(pfandwertList.get(indexProdukt-1));
+    }
+
+    public Optional<Kunde> pickOneUserFromAllUsers(){
+        Iterable<Kunde> kundenOptVec = this.kundeUseCases.getAllKunden();
+        List<Kunde> kundenList = new ArrayList<Kunde>();
+        kundenList = StreamSupport.stream(kundenOptVec.spliterator(), false).collect(Collectors.toList());
+        int count = 1;
+        for(Kunde kunde : kundenList) {
+            printKundeWithNumber(kunde, count);
+        }
+        int indexCustomer = 0;
+        while (true) {
+            indexCustomer = readIntInputWithPrompt("Which Customername do you want to change? Enter the Number: ");
+            if(indexCustomer < kundenList.size()+1 && indexCustomer > 0){
+                break;
+            }
+            System.out.println("Something went wrong the "+ indexCustomer +  " is not in the list");
+        }
+        return Optional.of(kundenList.get(indexCustomer-1));
+    }
+```
+
+Diese Methoden können generisch formuliert werden um die Wiederholungen selber Logik zu vermeiden und das anpassen im späteren Verlauf einheitlich zu ändern.
+
+``` java
+public Optional<T> pickOneFromList(List<T> list, Function<T, String> labelFunction) {
+	if (list.isEmpty()) {
+		System.out.println("Keine Einträge verfügbar.");
+		return Optional.empty();
+	}
+	
+	for (int i = 0; i < list.size(); i++) {
+		System.out.println((i + 1) + ": " + labelFunction.apply(list.get(i)));
+	}
+
+	int choice = consoleReader.readIntInputWithPrompt("Bitte Nummer eingeben: ");
+	
+	if (choice >= 1 && choice <= list.size()) {
+		return Optional.of(list.get(choice - 1));
+	}
+
+	return Optional.empty();
+}
+
+```
+
+### 8.2 Refactorings
+
+#### 8.2.1
+
+#### 8.2.2
