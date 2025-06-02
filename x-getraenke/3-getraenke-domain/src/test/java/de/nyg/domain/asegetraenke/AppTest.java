@@ -55,5 +55,5 @@ public class AppTest {
         assertEquals(10, oldPrice.getPrice());
         p.setPreis(newPreis, repo);
         assertEquals(200, p.getCurrentPreis().getPrice());
-    }
+    }    
 }

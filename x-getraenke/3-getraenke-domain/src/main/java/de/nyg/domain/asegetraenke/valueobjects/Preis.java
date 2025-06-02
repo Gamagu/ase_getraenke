@@ -1,6 +1,7 @@
 package de.nyg.domain.asegetraenke.valueobjects;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public final class Preis {
     final double preis;
@@ -34,10 +35,12 @@ public final class Preis {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof Preis){
-            return ((Preis)obj).obj == this.obj &&  ((Preis)obj).preis == this.preis && ((Preis)obj).time.equals(this.time);
-        }
-        else{
+        if (obj instanceof Preis) {
+            Preis other = (Preis) obj;
+            return Objects.equals(this.obj, other.obj) &&
+                   Double.compare(this.preis, other.preis) == 0 &&
+                   this.time != null && other.time != null && this.time.isEqual(other.time);
+        } else {
             return false;
         }
     }

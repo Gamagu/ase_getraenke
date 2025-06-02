@@ -6,8 +6,8 @@ import de.nyg.domain.asegetraenke.entities.Kunde;
 
 
 public abstract class KundeUsecases {
-    abstract void createKunde(String name, String nachname);
-    abstract Kunde getKunde(UUID uuid);
-    abstract Iterable<Kunde> getAllKunden();
-    abstract void setName(UUID uuid, String name, String nachname);
+    abstract public void createKunde(String name, String nachname);
+    abstract public Kunde getKunde(UUID uuid);
+    abstract public Iterable<Kunde> getAllKunden();
+    abstract public void setName(UUID uuid, String name, String nachname);
 }
