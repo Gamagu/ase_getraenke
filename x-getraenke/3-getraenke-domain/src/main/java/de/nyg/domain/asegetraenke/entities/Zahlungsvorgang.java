@@ -6,10 +6,10 @@ import de.nyg.domain.asegetraenke.util.EntityWrapper;
 
 
 public class Zahlungsvorgang extends EntityWrapper<Zahlungsvorgang>{
-    Kunde kunde;
-    String zahlungsweg;
-    double betrag;
-    LocalDateTime date;
+    private Kunde kunde;
+    private String zahlungsweg;
+    private double betrag;
+    private LocalDateTime date;
 
     public Zahlungsvorgang(Kunde kunde, String zahlungsweg, double betrag, LocalDateTime datetime){
         super();
@@ -21,5 +21,17 @@ public class Zahlungsvorgang extends EntityWrapper<Zahlungsvorgang>{
 
     public Kunde getKunde(){
         return kunde;
+    }
+
+    public String getZahlungsWeg(){
+        return zahlungsweg;
+    }
+
+    public double getBetrag(){
+        return betrag;
+    }
+
+    public LocalDateTime getDate(){
+        return date;
     }
 }
