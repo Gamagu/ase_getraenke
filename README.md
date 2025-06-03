@@ -101,8 +101,16 @@ Clean Architecture setzt sich aus folgenden Grundprinzipien zusammen:
    Innere Schichten dürfen nichts von äußeren Schichten wissen. Abhängigkeiten sollten immer von außen nach innen zeigen, wobei die Kernlogik der Anwendung (wie die Geschäftslogik) keinen Bezug zu den weniger zentralen Detailbereichen (wie UI oder Datenbank) haben sollte.
 
 ### 2.2 Analyse der Schichten 
+Das Projekt basiert auf einer klaren Trennung in drei Schichten: die Adapterschicht, die Anwendungsschicht und die Domänenschicht. Diese Schichten folgen den Prinzipien der Clean Architecture und haben jeweils spezifische Aufgaben und Verantwortlichkeiten.
 
-Niklas deine Aufgabe 
+#### 2.2.1 Domänenschicht
+Die Domänenschicht bildet die Grundlage der Anwendung, indem sie die Datenbasis und deren Beziehungen definiert. Sie wird ausschließlich für die Datenrepräsentation genutzt und enthält nur minimale Logik. Zu dieser Logik gehören beispielsweise die Generierung von IDs oder die Verknüpfung verschiedener Datentypen. Ein Beispiel hierfür ist die Verknüpfung eines Produkts mit seinem aktuellen Preis. Das Hauptziel dieser Schicht ist es, eine konsistente und zuverlässige Datenbasis sicherzustellen, die unabhängig von äußeren Einflüssen bleibt.
+
+#### 2.2.2 Anwendungsschicht
+Die Anwendungsschicht enthält die zentrale Geschäftslogik der Anwendung. Sie wird durch sogenannte Use Cases beschrieben, die die Schnittstelle zwischen der Domänenschicht und der Adapterschicht bilden. Diese Use Cases sind dafür verantwortlich, die Daten aus der Domänenschicht zu verarbeiten und an die Adapterschicht weiterzugeben. Um die Struktur der Anwendung übersichtlich zu halten, sind die Use Cases in zwei Hauptbereiche unterteilt: kundenbezogene und getränkebezogene Funktionalitäten. Diese Unterteilung ermöglicht eine klare Trennung der Verantwortlichkeiten, reduziert die Anzahl der Source-Files und sorgt dafür, dass die Dateien nicht unnötig groß werden.
+
+#### 2.2.3 Adapterschicht
+Die Adapterschicht dient als Verbindung zwischen der Geschäftslogik und den äußeren Systemen. Sie ermöglicht den Zugriff auf die Geschäftslogik und die Speicherung der Daten. Die Speicherung erfolgt über ein Repository, das ein Interface der Domänenschicht implementiert. Die Benutzerschnittstelle wird in diesem Projekt über das Terminal bereitgestellt. Dadurch können Benutzer direkt auf die in der Anwendungsschicht implementierten Use Cases zugreifen und die verschiedenen Funktionen der Anwendung nutzen.
 ### 2.3 Analyse der Dependency Rule
 Das Projekt ist in der Struktur so aufgebaut, dass es nicht möglich ist gegen die Regel der Dependency Rule zu verstoßen. Im Folgenden werden, deswegen keine Negativ Beispiele gezeigt bei denen diese Regel missachtet wird. 
 
@@ -771,14 +779,83 @@ KundenInputHandler --> EntityPicker
 ```
 
 ## 6. Domain Driven Design (DDD)
-Rücksprache mit Niklas 
+Ab dem Start der Entwicklung der Projektes wurde die Domäne ins Zentrum der Entwicklung gestellt und das möglichst der reale Ablauf abgebildet wird.
+## Entities
+Unserer Grund etwas als ein Entity abzubilden ist, wenn die Daten erhalten werden müssen und dabei kein Änderungsverlauf der Daten gefordert ist, bzw. wenn Änderungen eigentlich nicht vorgesehen sind. Am Beispiel eines Nutzers ist es nicht nötig die Änderungen seines Vornames zu tracken. Als beispiel für wenn ein Verlauf gefordert ist, ist ein Preis für ein Produkt. Im Vollgendem werden unsere eizelnen Entities beschriebn. Die Beschreibung umfasst das Gegenstück, welches aus der echten Welt abgebildet wird und welche Daten gespeichert werden,
+- Kunden
+	- Ein Kunde beschreibt eine natürliche Person, welche in dem Getränkesystem einkaufen kann.
+	- Gepseichert werden Name, Vorname und die Email.
+- Produkte
+	- Produkte beschreiben alles was verkauft werden kann. Im normalfall sind das Getränke.
+	- Dabei werden Name, Beschreibung, Kategorie gespeichert.
+	- Zusätzlich dazu werden Verweise zu dem zugehörigem Pfand und dem zugehörigem derzeitigem Preis gespeichert.
+- Bestellungen
+	- Bestellungen beschreiben eben eine Bestellung welche von einem Kunden aufgegeben wird.
+	- Diese ist identifizierbar durch eien Rechnungsnummer und einen Zeitstempel.
+	- Es werden darin verweise auf den Kunden und die Bestellten Produkte verwiesen.
+	- Die Bestellten Produkte werden mit der Anzahl dieser und dem abgerechnetem Preis gespeichert. (Siehe Bestellprodukt)
+- Zahlungsvorgang
+	- Ein Zahlungsvorgang beschreibt das Ausgleichen der Schulden, welche durch Rechnungen erzeugt werden.
+	- Dabei wird für jede Zahlung der Zahlungsweg, Betrag und der Zeitpunkt gespeichert.
+	- Zusätzlich wird ein verweis auf den Kunden gespeichert.
+- Lieferungen
+	- Lieferungen ermöglichen es alle Produkte welche vom Getränktesystem gekauft werden zu erfassen und dadurch den Lagerbestandzu errechnen.
+	- Dafür wird für jedes Produkt die Menge gespeichert, welche gekauft wird pro Lieferung.
 
+## Valueobjects
+Valueobjects haben bei uns oft den Zweck um einen Verlauf darzustellen. Diese sind möglichst kein um keine Daten redundant bei vielen Änderungen zu speichern.
+- Preis
+	- Ein Preis ist immer mit einem Objekt verbunden welches einen Preis haben kann. Dies ist in unserem Fall ein Produkt.
+	- Darin wird eine Referenz auf das Produkt gespeichert. Zusätzlich wird der Zeitpunkt zu welchem der Preis gesetzt wird gespeichert und wie hoch der Preis ist.
+- Pfandwert
+	- Ein Pfandwert beschreibt beispielsweise eine Falsche oder einen Kasten, welcher mit Pfand abgerechnet wird.
+	- Dafür wird eine Beschreibung eine Zeitpunkt der Erstellung und die Höhe des Pfandes gespeichert.
+	- Obwohl der Pfand einen Preis hat, wird nicht ein Preis-Valueobject benutzt, da der Pfandwert sich normalerweise nicht ändert.
+- Bestellungsprodukt
+	- Ein Bestellungssprodukt beschreibt eine Bestellposition, d.h. ein Produkt und die zugehörige Menge.
+	- Dies ist als Valueobject implementiert, da man für eine Position nachvollziehen kann wie diese geändert wurde und eventuell Bedienfehler  oder fehlende Wahre gut und nachvollziehbar verbessert werden kann.
+## Aggregates
+Aggregate werden als Zusammenfassung von Entities und Valueobjects genutzt, um an zusammenhängende Daten einfach heranzukommen.
+- CustomerDashboard
+	- Das CustomerDashboard fasst alle Daten zusammen welche sich auf einen Kunden beziehen und welche den Kunden Interessieren können.
+	- Diese Informationen bestehen aus dem Kunden Entity, alle Bestellungen des Kunden und alle Zahlungsvorgänge.
+	- Zusätzlich wird der gesammt gezahlte Betrag und der gesammte gekaufte Betrag vorberechnet. Daraus kann dann auch die noch geschuldete Summe berechnet werden.
+- ProductInformation
+	- Die ProduktInformation beschreibt alle Informationen welche ein Produkt bestreffen.
+	- Gepspeichert werden: Eine Referenz auf das Produkt, die derzeitigen Pfandwerte des Produktes und der verlauf des Preises.
+	- Vorberechnet werden die Anzahl welche bestellt wurden und wie viele noch auf Vorrat sind.
+
+## Repositories
+Grundsätzlich lässt sich unsere Datenbasis in zwei verschiedene Sub-Domänen unterscheiden. Daten bezüglich der Kunden und der des Getränkesystems. Nach dieser Stuktur wurden zwei Repositories erstellt.
+Das Kundenrepository umfasst folgende Daten:
+- Kundeninformionen, d.h. die Kunden-Entities
+- Zahlungsvorgänge, d.h. die Zahlungsvorgänge-Entities.
+
+Dazu sind Methoden vorgesehen diese Daten hinzuzufügen und auszulesen.
+
+Das Getränkerepository umfasst die restlichen Daten:
+- Produkte
+- Pfandwerte
+- Preise
+- Lieferungen
+- Bestellungen
+- Bestellpositionen
+Dieses Repository umfasst zusäzlich Methoden um diese Daten hinzuzufügen, auszulesen und vorallem schon nach filtervorgaben Auszulesen. Beispielsweise, dass nur ein User nach seiner Email gesucht werden kann.
 ## 7. Unit Tests 
 
 ### 7.1 Zehn Unit Tests - Tabelle 
-Niklas 
+| Unit Test Name | Beschreibung |
+| testBuildValidKunde | Testet, ob der `KundeBuilder` ein gültiges `Kunde`-Objekt erstellt. |
+| testBuildThrowsExceptionWhenFieldsAreNull | Überprüft, ob der `KundeBuilder` eine Exception wirft, wenn erforderliche Felder (Name, Nachname, E-Mail) null sind. |
+| testBuildValidProdukt | Testet, ob der `ProduktBuilder` ein gültiges `Produkt`-Objekt erstellt. |
+| testBuildThrowsExceptionWhenProduktFieldsAreNullprodukt | Überprüft, ob der `ProduktBuilder` eine Exception wirft, wenn erforderliche Felder (Name, Beschreibung, Kategorie) null sind. |
+| testBuildWithPreisAndPfandwerte | Testet, ob der `ProduktBuilder` ein `Produkt` mit gültigen `Preis`- und `Pfandwert`-Objekten erstellt. |
+| testGetAllKundenAndAdd | Testet, ob der `KundenUsecases` alle Kunden korrekt zurückgibt und neue Kunden hinzufügen kann. |
+| testGetKundenBalance | Überprüft, ob die `getKundenBalance`-Methode die korrekte Balance für einen Kunden zurückgibt. |
+| testAddZahlungsvorgang | Testet, ob der `KundenUsecases` einen neuen `Zahlungsvorgang` korrekt hinzufügen kann. |
+| testPreisCreation | Überprüft, ob ein `Preis`-Objekt korrekt erstellt wird und die Attribute richtig gesetzt sind. |
+| testPreisEquality | Testet, ob zwei `Preis`-Objekte mit identischen Attributen als gleich betrachtet werden. |
 ### 7.2 ATRIP
-Niklas 
 
 ### 7.3 Code Coverage 
 Um die Qualität und Korrektheit der Anwendung sicherzustellen, wurden für die zentralen Use Cases Unit Tests geschrieben. Ein zentrales Ziel war es, eine möglichst hohe Testabdeckung (Code Coverage) in den **Anwendungsfällen (Usecases)** zu erreichen, da diese die Kernlogik des Systems abbilden. Die Code Coverage wurde mit Hilfe des Maven-Plug-ins `jacoco-maven-plugin` gemessen.
