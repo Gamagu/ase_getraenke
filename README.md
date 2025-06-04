@@ -856,7 +856,22 @@ Dieses Repository umfasst zusäzlich Methoden um diese Daten hinzuzufügen, ausz
 | testPreisCreation | Überprüft, ob ein `Preis`-Objekt korrekt erstellt wird und die Attribute richtig gesetzt sind. |
 | testPreisEquality | Testet, ob zwei `Preis`-Objekte mit identischen Attributen als gleich betrachtet werden. |
 ### 7.2 ATRIP
+The ATRIP principles (Automatic, Thorough, Repeatable, Independent, Professional) are critical for ensuring high-quality tests. Here's a detailed application of these principles with examples:
 
+1. **Automatic**: Tests should run without manual intervention. For example, the `testHandleCreateKundeInput` in `KundenInputHandler` uses mocked dependencies like `ConsoleReader` and `KundenUsecases`, allowing the test to execute automatically without requiring user input. A bad example would be a test that pauses execution to wait for manual input, such as calling `System.in.read()` for user interaction, which breaks automation.
+
+2. **Thorough**: Tests should cover all relevant scenarios, including edge cases. For instance, `testBuildThrowsExceptionWhenFieldsAreNull` ensures that the `KundeBuilder` throws an exception when required fields are missing, covering a critical failure scenario. A bad example would be a test that only checks the happy path, such as verifying that a `Kunde` is created successfully without testing invalid inputs or edge cases.
+
+3. **Repeatable**: Tests should produce consistent results regardless of the environment. For example, `testGetKundenBalance` mocks the `KundenUsecases` to return a fixed balance, ensuring the test behaves the same across different runs. A bad example would be a test that depends on external systems like a live database or network, where results might vary due to external factors.
+
+4. **Independent**: Tests should not depend on the execution order or shared state. For example, `testAddZahlungsvorgang` isolates the logic of adding a payment by mocking all external dependencies, ensuring it can run independently of other tests. A bad example would be a test that relies on a global state modified by a previous test, leading to flaky results if the order changes.
+
+5. **Professional**: Tests should be well-structured, readable, and maintainable. For instance, the use of descriptive method names like `testBuildValidKunde` and clear assertions improves readability and professionalism. A bad example would be a test with vague names like `test1` or without proper assertions, making it hard to understand or debug.
+
+By adhering to these principles, tests become reliable, maintainable, and effective in validating the application's behavior.
+
+
+===
 ### 7.3 Code Coverage 
 Um die Qualität und Korrektheit der Anwendung sicherzustellen, wurden für die zentralen Use Cases Unit Tests geschrieben. Ein zentrales Ziel war es, eine möglichst hohe Testabdeckung (Code Coverage) in den **Anwendungsfällen (Usecases)** zu erreichen, da diese die Kernlogik des Systems abbilden. Die Code Coverage wurde mit Hilfe des Maven-Plug-ins `jacoco-maven-plugin` gemessen.
 
