@@ -51,6 +51,7 @@ public class GetraenkeRepositoryMock implements GetraenkeRepository, CustomerRep
     }
 
     public void addProdukt(Produkt produkt) {
+        data.produkte.add(produkt);
     };
 
     public void addPfandwert(Pfandwert pfandwert) {

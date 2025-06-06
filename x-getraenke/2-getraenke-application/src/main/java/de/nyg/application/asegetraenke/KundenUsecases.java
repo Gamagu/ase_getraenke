@@ -45,7 +45,7 @@ public class KundenUsecases {
     }
 
     public double getKundenZahlungenSum(Kunde kunde){
-        return StreamSupport.stream(getAllBestellungen(kunde).spliterator(), false).map(order -> order.getSumOfOrder()).mapToDouble(order -> order).sum();
+        return StreamSupport.stream(getAllZahlungen(kunde).spliterator(), false).map(order -> order.getBetrag()).mapToDouble(order -> order).sum();
     }
 
     public Iterable<Zahlungsvorgang> getAllZahlungen(Kunde kunde){

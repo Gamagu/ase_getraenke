@@ -102,7 +102,15 @@ Clean Architecture setzt sich aus folgenden Grundprinzipien zusammen:
 
 ### 2.2 Analyse der Schichten 
 
-Niklas deine Aufgabe 
+Das Projekt basiert auf einer klaren Trennung in drei Schichten: die Adapterschicht, die Anwendungsschicht und die Domänenschicht. Diese Schichten folgen den Prinzipien der Clean Architecture und haben jeweils spezifische Aufgaben und Verantwortlichkeiten.
+#### 2.2.1 Domänenschicht
+Die Domänenschicht bildet die Grundlage der Anwendung, indem sie die Datenbasis und deren Beziehungen definiert. Sie wird ausschließlich für die Datenrepräsentation genutzt und enthält nur minimale Logik. Zu dieser Logik gehören beispielsweise die Generierung von IDs oder die Verknüpfung verschiedener Datentypen. Ein Beispiel hierfür ist die Verknüpfung eines Produkts mit seinem aktuellen Preis. Das Hauptziel dieser Schicht ist es, eine konsistente und zuverlässige Datenbasis sicherzustellen, die unabhängig von äußeren Einflüssen bleibt.
+
+#### 2.2.2 Anwendungsschicht
+Die Anwendungsschicht enthält die zentrale Geschäftslogik der Anwendung. Sie wird durch sogenannte Use Cases beschrieben, die die Schnittstelle zwischen der Domänenschicht und der Adapterschicht bilden. Diese Use Cases sind dafür verantwortlich, die Daten aus der Domänenschicht zu verarbeiten und an die Adapterschicht weiterzugeben. Um die Struktur der Anwendung übersichtlich zu halten, sind die Use Cases in zwei Hauptbereiche unterteilt: kundenbezogene und getränkebezogene Funktionalitäten. Diese Unterteilung ermöglicht eine klare Trennung der Verantwortlichkeiten, reduziert die Anzahl der Source-Files und sorgt dafür, dass die Dateien nicht unnötig groß werden.
+
+#### 2.2.3 Adapterschicht
+Die Adapterschicht dient als Verbindung zwischen der Geschäftslogik und den äußeren Systemen. Sie ermöglicht den Zugriff auf die Geschäftslogik und die Speicherung der Daten. Die Speicherung erfolgt über ein Repository, das ein Interface der Domänenschicht implementiert. Die Benutzerschnittstelle wird in diesem Projekt über das Terminal bereitgestellt. Dadurch können Benutzer direkt auf die in der Anwendungsschicht implementierten Use Cases zugreifen und die verschiedenen Funktionen der Anwendung nutzen.
 ### 2.3 Analyse der Dependency Rule
 Das Projekt ist in der Struktur so aufgebaut, dass es nicht möglich ist gegen die Regel der Dependency Rule zu verstoßen. Im Folgenden werden, deswegen keine Negativ Beispiele gezeigt bei denen diese Regel missachtet wird. 
 
@@ -771,14 +779,106 @@ KundenInputHandler --> EntityPicker
 ```
 
 ## 6. Domain Driven Design (DDD)
-Rücksprache mit Niklas 
+Ab dem Start der Entwicklung der Projektes wurde die Domäne ins Zentrum der Entwicklung gestellt und das möglichst der reale Ablauf abgebildet wird.
+
+### 6.1 Entities
+Unserer Grund etwas als ein Entity abzubilden ist, wenn die Daten erhalten werden müssen und dabei kein Änderungsverlauf der Daten gefordert ist, bzw. wenn Änderungen eigentlich nicht vorgesehen sind. Am Beispiel eines Nutzers ist es nicht nötig die Änderungen seines Vornames zu tracken. Als beispiel für wenn ein Verlauf gefordert ist, ist ein Preis für ein Produkt. Im Vollgendem werden unsere eizelnen Entities beschriebn. Die Beschreibung umfasst das Gegenstück, welches aus der echten Welt abgebildet wird und welche Daten gespeichert werden,
+
+- Kunden
+    - Ein Kunde beschreibt eine natürliche Person, welche in dem Getränkesystem einkaufen kann.
+    - Gepseichert werden Name, Vorname und die Email.
+- Produkte
+    - Produkte beschreiben alles was verkauft werden kann. Im normalfall sind das Getränke.
+    - Dabei werden Name, Beschreibung, Kategorie gespeichert.
+    - Zusätzlich dazu werden Verweise zu dem zugehörigem Pfand und dem zugehörigem derzeitigem Preis gespeichert.
+- Bestellungen
+    - Bestellungen beschreiben eben eine Bestellung welche von einem Kunden aufgegeben wird.
+    - Diese ist identifizierbar durch eien Rechnungsnummer und einen Zeitstempel.
+    - Es werden darin verweise auf den Kunden und die Bestellten Produkte verwiesen.
+    - Die Bestellten Produkte werden mit der Anzahl dieser und dem abgerechnetem Preis gespeichert. (Siehe Bestellprodukt)
+- Zahlungsvorgang
+    - Ein Zahlungsvorgang beschreibt das Ausgleichen der Schulden, welche durch Rechnungen erzeugt werden.
+    - Dabei wird für jede Zahlung der Zahlungsweg, Betrag und der Zeitpunkt gespeichert.
+    - Zusätzlich wird ein verweis auf den Kunden gespeichert.
+- Lieferungen
+    - Lieferungen ermöglichen es alle Produkte welche vom Getränktesystem gekauft werden zu erfassen und dadurch den Lagerbestandzu errechnen.
+    - Dafür wird für jedes Produkt die Menge gespeichert, welche gekauft wird pro Lieferung.
+
+### 6.2 Valueobjects
+
+Valueobjects haben bei uns oft den Zweck um einen Verlauf darzustellen. Diese sind möglichst kein um keine Daten redundant bei vielen Änderungen zu speichern.
+
+- Preis
+    - Ein Preis ist immer mit einem Objekt verbunden welches einen Preis haben kann. Dies ist in unserem Fall ein Produkt.
+    - Darin wird eine Referenz auf das Produkt gespeichert. Zusätzlich wird der Zeitpunkt zu welchem der Preis gesetzt wird gespeichert und wie hoch der Preis ist.
+- Pfandwert
+    - Ein Pfandwert beschreibt beispielsweise eine Falsche oder einen Kasten, welcher mit Pfand abgerechnet wird.
+    - Dafür wird eine Beschreibung eine Zeitpunkt der Erstellung und die Höhe des Pfandes gespeichert.
+    - Obwohl der Pfand einen Preis hat, wird nicht ein Preis-Valueobject benutzt, da der Pfandwert sich normalerweise nicht ändert.
+- Bestellungsprodukt
+    - Ein Bestellungssprodukt beschreibt eine Bestellposition, d.h. ein Produkt und die zugehörige Menge.
+    - Dies ist als Valueobject implementiert, da man für eine Position nachvollziehen kann wie diese geändert wurde und eventuell Bedienfehler oder fehlende Wahre gut und nachvollziehbar verbessert werden kann.
+
+### 6.3 Aggregates
+
+Aggregate werden als Zusammenfassung von Entities und Valueobjects genutzt, um an zusammenhängende Daten einfach heranzukommen.
+
+- CustomerDashboard
+    - Das CustomerDashboard fasst alle Daten zusammen welche sich auf einen Kunden beziehen und welche den Kunden Interessieren können.
+    - Diese Informationen bestehen aus dem Kunden Entity, alle Bestellungen des Kunden und alle Zahlungsvorgänge.
+    - Zusätzlich wird der gesammt gezahlte Betrag und der gesammte gekaufte Betrag vorberechnet. Daraus kann dann auch die noch geschuldete Summe berechnet werden.
+- ProductInformation
+    - Die ProduktInformation beschreibt alle Informationen welche ein Produkt bestreffen.
+    - Gepspeichert werden: Eine Referenz auf das Produkt, die derzeitigen Pfandwerte des Produktes und der verlauf des Preises.
+    - Vorberechnet werden die Anzahl welche bestellt wurden und wie viele noch auf Vorrat sind.
+
+### 6.4 Repositories
+
+Grundsätzlich lässt sich unsere Datenbasis in zwei verschiedene Sub-Domänen unterscheiden. Daten bezüglich der Kunden und der des Getränkesystems. Nach dieser Stuktur wurden zwei Repositories erstellt. Das Kundenrepository umfasst folgende Daten:
+
+- Kundeninformionen, d.h. die Kunden-Entities
+- Zahlungsvorgänge, d.h. die Zahlungsvorgänge-Entities.
+
+Dazu sind Methoden vorgesehen diese Daten hinzuzufügen und auszulesen.
+
+Das Getränkerepository umfasst die restlichen Daten:
+
+- Produkte
+- Pfandwerte
+- Preise
+- Lieferungen
+- Bestellungen
+- Bestellpositionen Dieses Repository umfasst zusäzlich Methoden um diese Daten hinzuzufügen, auszulesen und vorallem schon nach filtervorgaben Auszulesen. Beispielsweise, dass nur ein User nach seiner Email gesucht werden kann.
 
 ## 7. Unit Tests 
 
 ### 7.1 Zehn Unit Tests - Tabelle 
-Niklas 
+| Unit Test Name                              | Beschreibung                                                                                      |
+|--------------------------------------------|---------------------------------------------------------------------------------------------------|
+| testBuildValidKunde                        | Testet, ob der `KundeBuilder` ein gültiges `Kunde`-Objekt erstellt.                              |
+| testBuildThrowsExceptionWhenFieldsAreNull  | Überprüft, ob der `KundeBuilder` eine Exception wirft, wenn erforderliche Felder null sind.      |
+| testBuildValidProdukt                      | Testet, ob der `ProduktBuilder` ein gültiges `Produkt`-Objekt erstellt.                          |
+| testBuildThrowsExceptionWhenProduktFieldsAreNull | Überprüft, ob der `ProduktBuilder` eine Exception wirft, wenn erforderliche Felder null sind.     |
+| testBuildWithPreisAndPfandwerte            | Testet, ob der `ProduktBuilder` ein `Produkt` mit gültigen `Preis`- und `Pfandwert`-Objekten erstellt. |
+| testGetAllKundenAndAdd                     | Testet, ob der `KundenUsecases` alle Kunden korrekt zurückgibt und neue Kunden hinzufügen kann.  |
+| testGetKundenBalance                       | Überprüft, ob die `getKundenBalance`-Methode die korrekte Balance für einen Kunden zurückgibt.   |
+| testAddZahlungsvorgang                     | Testet, ob der `KundenUsecases` einen neuen `Zahlungsvorgang` korrekt hinzufügen kann.           |
+| testPreisCreation                          | Überprüft, ob ein `Preis`-Objekt korrekt erstellt wird und die Attribute richtig gesetzt sind.   |
+| testPreisEquality                          | Testet, ob zwei `Preis`-Objekte mit identischen Attributen als gleich betrachtet werden.         |
 ### 7.2 ATRIP
-Niklas 
+Die ATRIP-Prinzipien (Automatisch, Tiefgehend, Reproduzierbar, Unabhängig, Professionell) sind entscheidend, um qualitativ hochwertige Tests sicherzustellen. Hier ist eine detaillierte Anwendung dieser Prinzipien mit Beispielen:
+
+1. **Automatic**: Tests sollten ohne manuelle Eingriffe ausführbar sein. Zum Beispiel verwendet der Test `testHandleCreateKundeInput` in `KundenInputHandler` gemockte Abhängigkeiten wie `ConsoleReader` und `KundenUsecases`, sodass der Test automatisch und ohne Benutzereingabe ablaufen kann. Ein schlechtes Beispiel wäre ein Test, der die Ausführung pausiert, um auf eine manuelle Eingabe zu warten, etwa durch einen Aufruf wie `System.in.read()`, was die Automatisierung bricht.
+    
+2. **Thorough**: Tests sollten alle relevanten Szenarien abdecken, einschließlich Randfällen. Zum Beispiel stellt `testBuildThrowsExceptionWhenFieldsAreNull` sicher, dass der `KundeBuilder` eine Ausnahme wirft, wenn erforderliche Felder fehlen – ein kritisches Fehlerszenario. Ein schlechtes Beispiel wäre ein Test, der nur den "Happy Path" überprüft, z. B. ob ein `Kunde` erfolgreich erstellt wird, ohne ungültige Eingaben oder Randfälle zu testen.
+    
+3. **Repeatable**: Tests sollten unabhängig von der Umgebung konsistente Ergebnisse liefern. Zum Beispiel mockt `testGetKundenBalance` die `KundenUsecases`, um einen festen Kontostand zurückzugeben, wodurch sichergestellt wird, dass der Test bei jedem Durchlauf gleich funktioniert. Ein schlechtes Beispiel wäre ein Test, der von externen Systemen wie einer Live-Datenbank oder einem Netzwerk abhängt, bei denen die Ergebnisse durch äußere Faktoren variieren können.
+    
+4. **Independent**: Tests sollten nicht von der Ausführungsreihenfolge oder gemeinsam genutztem Zustand abhängen. Zum Beispiel isoliert `testAddZahlungsvorgang` die Logik des Hinzufügens einer Zahlung durch das Mocken aller externen Abhängigkeiten, sodass er unabhängig von anderen Tests ausgeführt werden kann. Ein schlechtes Beispiel wäre ein Test, der sich auf einen globalen Zustand verlässt, der von einem vorherigen Test verändert wurde – das führt zu instabilen Ergebnissen, wenn sich die Reihenfolge ändert.
+    
+5. **Professional**: Tests sollten gut strukturiert, lesbar und wartbar sein. Zum Beispiel verbessert die Verwendung beschreibender Methodennamen wie `testBuildValidKunde` und klarer Assertions die Lesbarkeit und Professionalität. Ein schlechtes Beispiel wäre ein Test mit vagen Namen wie `test1` oder ohne aussagekräftige Assertions, was das Verständnis und Debugging erschwert.
+
+Durch die Einhaltung dieser Prinzipien werden Tests zuverlässig, wartbar und effektiv bei der Validierung des Verhaltens einer Anwendung.
 
 ### 7.3 Code Coverage 
 Um die Qualität und Korrektheit der Anwendung sicherzustellen, wurden für die zentralen Use Cases Unit Tests geschrieben. Ein zentrales Ziel war es, eine möglichst hohe Testabdeckung (Code Coverage) in den **Anwendungsfällen (Usecases)** zu erreichen, da diese die Kernlogik des Systems abbilden. Die Code Coverage wurde mit Hilfe des Maven-Plug-ins `jacoco-maven-plugin` gemessen.
@@ -792,6 +892,10 @@ Die Tests konzentrieren sich hauptsächlich auf die Anwendungsschicht (Layer `ge
 Die Coverage-Berichte zeigen, dass diese Klassen zu einem großen Teil durch automatisierte Tests abgedeckt sind. Besonders häufig getestete Methoden sind:
 - `createKunde(...)`, `getKundenBalance(...)`
 - `addProdukt(...)`, `getStockAmountForProdukt(...)`, `setPriceForProdukt(...)`
+<img width="1246" alt="Screenshot 2025-06-03 at 10 27 33" src="https://github.com/user-attachments/assets/7e99b493-c985-482e-af95-f9c790c10069" />
+<img width="1246" alt="Screenshot 2025-06-03 at 10 27 47" src="https://github.com/user-attachments/assets/db02f494-54a0-44f1-ba0a-d56e5432ca79" />
+<img width="1246" alt="Screenshot 2025-06-03 at 10 27 57" src="https://github.com/user-attachments/assets/b3c144bf-31be-4b80-8070-8e8a871ce0fb" />
+
 
 ### 7.4 Fakes und Mocks
 
@@ -1176,6 +1280,100 @@ public Optional<T> pickOneFromList(List<T> list, Function<T, String> labelFuncti
 
 ### 8.2 Refactorings
 
-#### 8.2.1
+### 7.2.1 Replace Parameter with Builder
 
-#### 8.2.2
+**Begründung:**  
+In der ursprünglichen Implementierung wurde bei der Erstellung eines Kundenobjekts direkt mit mehreren Parametern gearbeitet. Durch das Refactoring wurde der Builder Pattern eingeführt, um die Objekterstellung klarer zu strukturieren und zu kapseln. Das verbessert sowohl die Lesbarkeit als auch die Erweiterbarkeit, z. B. bei zusätzlichen Attributen.
+
+**Code vorher:**
+
+``` java
+kundeUseCases.createKunde(name, nachname, email);
+```
+
+**Code nachher:**
+
+```java
+Kunde kunde = new KundeBuilder()
+	.withName(name)    
+	.withNachname(nachname)     
+	.withEmail(email)     
+	.build(); 
+	
+kundeUseCases.createKunde(kunde);`
+```
+
+**Commit:**  5b8c6a97f985ae77d85279b8d977d2ae98857c00
+
+**UML vorher:**
+
+```mermaid
+classDiagram     
+	class KundenInputHandler {        
+	+ handleCreateKundeInput()     
+	}     
+	class IKundenUsecases {         
+	+createKunde(String, String, String)     
+	}     
+	
+	KundenInputHandler --> IKundenUsecases
+
+```
+
+**UML nachher:**
+
+```mermaid
+	classDiagram     
+	class KundenInputHandler {         +handleCreateKundeInput()     }     
+	class IKundenUsecases {         +createKunde(Kunde)     }     
+	class KundeBuilder {         +withName()         +withNachname()         +withEmail()         +build()     }     
+	KundenInputHandler --> KundeBuilder     
+	KundenInputHandler --> IKundenUsecases
+
+```
+
+
+### 7.2.2 Extract Method
+
+**Begründung:**  
+In der Methode wie z.B. `handleAddProduktInput()` war die gesamte Benutzerinteraktion und Objekterstellung inline implementiert. Durch das Refactoring wurde ein Teil der Logik – z. B. das Einlesen der Produktinformationen – in eine eigene Methode ausgelagert. Das verbessert die Übersichtlichkeit und ermöglicht einfachere Wiederverwendung und Tests.
+
+**Code vorher:**
+
+```java
+
+public void handleAddProduktInput() {     
+	String name = ...;     
+	String beschreibung = ...;
+	...    
+	Produkt produkt = new Produkt(name, beschreibung, kategorie);     ... }
+```
+
+**Code nachher:**
+
+```java
+public void handleAddProduktInput() {     
+	Produkt produkt = readProduktInput();     
+	... 
+	}  private Produkt readProduktInput() {     String name = ...;     String beschreibung = ...;     ...     return new Produkt(name, beschreibung, kategorie); }`
+```
+
+**Commit:**  
+`a58c90b` – Extraktion der Produkt-Erstellung
+
+**UML vorher:**
+
+```mermaid
+	classDiagram     
+	class GetraenkeInputHandler {         +handleAddProduktInput()     }
+```
+
+**UML nachher:**
+
+```mermaid
+	classDiagram     
+	class GetraenkeInputHandler {         
+	+handleAddProduktInput()        
+	-readProduktInput()     }
+```
+

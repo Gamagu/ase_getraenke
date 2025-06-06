@@ -43,7 +43,9 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
     public void setPfandAssignment(Iterable<Pfandwert> newPfand, GetraenkeRepository repo){
         Iterable<Pfandwert> savedPfandwerte =  repo.getPfandwerte();
         for(Pfandwert wert : newPfand){
-            assert(StreamSupport.stream(savedPfandwerte.spliterator(), false).anyMatch(t-> t.equals(wert)));
+            if(!StreamSupport.stream(savedPfandwerte.spliterator(), false).anyMatch(t-> t.equals(wert))){
+                repo.addPfandwert(wert);
+            }
         }
         this.pfand = newPfand;
     }
