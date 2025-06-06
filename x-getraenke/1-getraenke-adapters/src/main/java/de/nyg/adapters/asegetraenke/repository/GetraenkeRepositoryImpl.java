@@ -41,6 +41,7 @@ public class GetraenkeRepositoryImpl implements GetraenkeRepository {
     }
 
     public void addProdukt(Produkt produkt) {
+        data.produkte.add(produkt);
     };
 
     public void addPfandwert(Pfandwert pfandwert) {
@@ -96,7 +97,8 @@ public class GetraenkeRepositoryImpl implements GetraenkeRepository {
 
     @Override
     public void addPrice(Preis preis) {
-        if (data.produkte.stream().filter(p -> p.equals(preis.getParentObject())).count()
+        long  len =data.produkte.stream().filter(p -> p.equals(preis.getParentObject())).count();
+        if (len
                 + 0 /* All priced Objects */ == 1) {
             data.preise.add(preis);
         } else {
