@@ -892,9 +892,10 @@ Die Tests konzentrieren sich hauptsächlich auf die Anwendungsschicht (Layer `ge
 Die Coverage-Berichte zeigen, dass diese Klassen zu einem großen Teil durch automatisierte Tests abgedeckt sind. Besonders häufig getestete Methoden sind:
 - `createKunde(...)`, `getKundenBalance(...)`
 - `addProdukt(...)`, `getStockAmountForProdukt(...)`, `setPriceForProdukt(...)`
-![[Screenshot 2025-06-03 at 10.27.33.png]]
-![[Screenshot 2025-06-03 at 10.27.47.png]]
-![[Screenshot 2025-06-03 at 10.27.57.png]]
+<img width="1246" alt="Screenshot 2025-06-03 at 10 27 33" src="https://github.com/user-attachments/assets/7e99b493-c985-482e-af95-f9c790c10069" />
+<img width="1246" alt="Screenshot 2025-06-03 at 10 27 47" src="https://github.com/user-attachments/assets/db02f494-54a0-44f1-ba0a-d56e5432ca79" />
+<img width="1246" alt="Screenshot 2025-06-03 at 10 27 57" src="https://github.com/user-attachments/assets/b3c144bf-31be-4b80-8070-8e8a871ce0fb" />
+
 
 ### 7.4 Fakes und Mocks
 
