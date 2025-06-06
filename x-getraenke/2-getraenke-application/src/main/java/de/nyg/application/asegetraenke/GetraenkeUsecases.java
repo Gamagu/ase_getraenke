@@ -121,8 +121,9 @@ public class GetraenkeUsecases{
 
     public void addProdukt(Produkt produkt, double preis) throws Exception{
         Preis p = new Preis(preis, produkt);
-        produkt.setPreis(p, grepo);
         grepo.addProdukt(produkt);
+        grepo.addPrice(p);
+        produkt.setPreis(p, grepo);
     }
 
      public Optional<Produkt> getProduct(UUID produktId) throws Exception{

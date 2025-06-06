@@ -1,5 +1,6 @@
 package de.nyg.application.asegetraenke;
 
+import de.nyg.application.asegetraenke.builder.ProduktBuilder;
 import de.nyg.domain.asegetraenke.entities.Kunde;
 import de.nyg.domain.asegetraenke.entities.Produkt;
 import de.nyg.domain.asegetraenke.entities.Zahlungsvorgang;
@@ -68,7 +69,7 @@ class KundenUsecasesTest {
     @Test
     void testGetKundenBalance() throws Exception{
         Kunde kunde = new Kunde( "John", "Doe","test@example.com");
-        Produkt produkt = mock(Produkt.class);
+        Produkt produkt = new Produkt("TestP", "TestB", "TestK");
         gUsecasess.addProdukt(produkt, 10);
         
         List<Triple<Produkt, Integer, Double>> produkte = new ArrayList<>(); // Retrieve a product, wrap in Bestellprodukt, and add to a list
