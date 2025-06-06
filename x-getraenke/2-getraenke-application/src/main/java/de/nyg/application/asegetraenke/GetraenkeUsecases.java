@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import de.nyg.domain.asegetraenke.entities.Bestellung;
@@ -51,6 +52,20 @@ public class GetraenkeUsecases{
      public Pfandwert setPfandwert(Pfandwert pfandwert, double newValue) throws Exception{
         Pfandwert newPfandwert = new Pfandwert(newValue, pfandwert.beschreibung);
         grepo.addPfandwert(newPfandwert);
+        for (Produkt p : grepo.getProdukte()){
+            Iterable<Pfandwert> pfandwerte = p.getPfandwert();
+            if(StreamSupport.stream((pfandwerte.spliterator()),false).filter(x -> x.getId() == pfandwert.getId()).count() > 0){
+                ArrayList<Pfandwert> newPfandwerte = new ArrayList<>();
+                for(Pfandwert pf: pfandwerte){
+                    if(pf.getId() == pfandwert.getId()){
+                        newPfandwerte.add(newPfandwert);
+                    }else {
+                        newPfandwerte.add(pf);
+                    }
+                }
+                p.setPfandAssignment(newPfandwerte, grepo);
+            }
+        }
         return newPfandwert;
     }
 
