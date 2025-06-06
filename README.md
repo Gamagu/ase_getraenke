@@ -1280,7 +1280,7 @@ public Optional<T> pickOneFromList(List<T> list, Function<T, String> labelFuncti
 
 ### 8.2 Refactorings
 
-### 7.2.1 Replace Parameter with Builder
+### 8.2.1 Replace Parameter with Builder
 
 **Begründung:**  
 In der ursprünglichen Implementierung wurde bei der Erstellung eines Kundenobjekts direkt mit mehreren Parametern gearbeitet. Durch das Refactoring wurde der Builder Pattern eingeführt, um die Objekterstellung klarer zu strukturieren und zu kapseln. Das verbessert sowohl die Lesbarkeit als auch die Erweiterbarkeit, z. B. bei zusätzlichen Attributen.
@@ -1333,7 +1333,7 @@ classDiagram
 ```
 
 
-### 7.2.2 Extract Method
+### 8.2.2 Extract Method
 
 **Begründung:**  
 In der Methode wie z.B. `handleAddProduktInput()` war die gesamte Benutzerinteraktion und Objekterstellung inline implementiert. Durch das Refactoring wurde ein Teil der Logik – z. B. das Einlesen der Produktinformationen – in eine eigene Methode ausgelagert. Das verbessert die Übersichtlichkeit und ermöglicht einfachere Wiederverwendung und Tests.
