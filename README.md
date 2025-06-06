@@ -801,6 +801,72 @@ Unserer Grund etwas als ein Entity abzubilden ist, wenn die Daten erhalten werde
 - Lieferungen
 	- Lieferungen ermöglichen es alle Produkte welche vom Getränktesystem gekauft werden zu erfassen und dadurch den Lagerbestandzu errechnen.
 	- Dafür wird für jedes Produkt die Menge gespeichert, welche gekauft wird pro Lieferung.
+```mermaid
+classDiagram
+    class Kunde {
+        - String name
+        - String nachname
+        - String mail
+        + Kunde(String name, String nachname, String mail)
+        + void setName(String name, String nachname)
+        + String getMail()
+        + String getName()
+        + String getNachname()
+        + String toString()
+    }
+    Kunde <|-- EntityWrapper
+
+    class Produkt {
+        - String name
+        - String beschreibung
+        - String kategorie
+        - Preis preis
+        - Iterable~Pfandwert~ pfand
+        + Produkt(String name, String beschreibung, String kategorie)
+        + Preis getCurrentPreis()
+        + Iterable~Pfandwert~ getPfandwert()
+        + void setPreis(Preis preis, GetraenkeRepository repo)
+        + void setPfandAssignment(Iterable~Pfandwert~ newPfand, GetraenkeRepository repo)
+        + double getPfandSum()
+        + String toString()
+        + String getName()
+        + String getBeschreibung()
+        + String getKategorie()
+    }
+    class Bestellung {
+        - static AtomicInteger counter
+        - Kunde kunde
+        - LocalDateTime timestamp
+        - Iterable~BestellungProdukt~ produkte
+        - int number
+        + Bestellung(Kunde kunde, LocalDateTime timestamp, Iterable~BestellungProdukt~ produkte)
+        + Stream~BestellungProdukt~ getProdukte()
+        + Kunde getKunde()
+        + int getNumber()
+        + double getSumOfOrder()
+    }
+    class Zahlungsvorgang {
+        - Kunde kunde
+        - String zahlungsweg
+        - double betrag
+        - LocalDateTime date
+        + Zahlungsvorgang(Kunde kunde, String zahlungsweg, double betrag, LocalDateTime datetime)
+        + Kunde getKunde()
+        + String getZahlungsWeg()
+        + double getBetrag()
+        + LocalDateTime getDate()
+    }
+    class Lieferung {
+	- Produkt produkt
+	- int menge
+	- LocalDateTime timestamp
+	+ Lieferung(Produkt produkt, int menge, LocalDateTime timestamp)
+	+ Produkt getProdukt()
+	+ int getMenge()
+	+ LocalDateTime getTimestamp()
+    }
+```
+
 
 ## Valueobjects
 Valueobjects haben bei uns oft den Zweck um einen Verlauf darzustellen. Diese sind möglichst kein um keine Daten redundant bei vielen Änderungen zu speichern.
@@ -814,6 +880,46 @@ Valueobjects haben bei uns oft den Zweck um einen Verlauf darzustellen. Diese si
 - Bestellungsprodukt
 	- Ein Bestellungssprodukt beschreibt eine Bestellposition, d.h. ein Produkt und die zugehörige Menge.
 	- Dies ist als Valueobject implementiert, da man für eine Position nachvollziehen kann wie diese geändert wurde und eventuell Bedienfehler  oder fehlende Wahre gut und nachvollziehbar verbessert werden kann.
+
+```mermaid
+classDiagram
+    class Preis {
+        - double preis
+        - Priced obj
+        - LocalDateTime time
+        + Preis(double preis, Priced obj)
+        + Preis(double preis, Priced obj, LocalDateTime date)
+        + Priced getParentObject()
+        + double getPrice()
+        + LocalDateTime getCreationDate()
+        + boolean equals(Object obj)
+    }
+    class Priced {
+        <<interface>>
+    }
+
+    Preis --> Priced
+
+   class Pfandwert {
+        - double wert
+        - String beschreibung
+        - LocalDateTime creationDate
+        + Pfandwert(double wert, String beschreibung)
+        + String toString()
+    }
+    class BestellungProdukt {
+        - Produkt produkt
+        - Iterable~Pfandwert~ pfand
+        - Preis preis
+        - int menge
+        + BestellungProdukt(Produkt produkt, Preis preis, int menge)
+        + Produkt getProdukt()
+        + int getMenge()
+        + Preis getPreis()
+    }
+```
+
+
 ## Aggregates
 Aggregate werden als Zusammenfassung von Entities und Valueobjects genutzt, um an zusammenhängende Daten einfach heranzukommen.
 - CustomerDashboard
@@ -824,6 +930,27 @@ Aggregate werden als Zusammenfassung von Entities und Valueobjects genutzt, um a
 	- Die ProduktInformation beschreibt alle Informationen welche ein Produkt bestreffen.
 	- Gepspeichert werden: Eine Referenz auf das Produkt, die derzeitigen Pfandwerte des Produktes und der verlauf des Preises.
 	- Vorberechnet werden die Anzahl welche bestellt wurden und wie viele noch auf Vorrat sind.
+```mermaid
+classDiagram
+class CustomerDashboard {
+	- Kunde kunde
+	- ArrayList~Bestellung~ bestellungen
+	- double gezahlt
+	- double warenwert
+	- ArrayList~Zahlungsvorgang~ zahlungsvorgaenge
+	+ CustomerDashboard(Kunde kunde, KundenUsecases kusecases)
+}
+
+class ProductInformation {
+        - Produkt produkt
+        - ArrayList~Pfandwert~ pfandwerte
+        - ArrayList~Preis~ preise
+        - int ordered
+        - int inStock
+        + ProductInformation(Produkt produkt, GetraenkeUsecases gusecases)
+    }
+```
+
 
 ## Repositories
 Grundsätzlich lässt sich unsere Datenbasis in zwei verschiedene Sub-Domänen unterscheiden. Daten bezüglich der Kunden und der des Getränkesystems. Nach dieser Stuktur wurden zwei Repositories erstellt.
@@ -841,6 +968,39 @@ Das Getränkerepository umfasst die restlichen Daten:
 - Bestellungen
 - Bestellpositionen
 Dieses Repository umfasst zusäzlich Methoden um diese Daten hinzuzufügen, auszulesen und vorallem schon nach filtervorgaben Auszulesen. Beispielsweise, dass nur ein User nach seiner Email gesucht werden kann.
+
+```mermaid
+classDiagram
+    class GetraenkeRepository {
+        + Iterable~Produkt~ getProdukte()
+        + Iterable~Pfandwert~ getPfandwerte()
+        + Iterable~Bestellung~ getBestellungen()
+        + Iterable~Lieferung~ getLieferungen()
+        + Iterable~Lieferung~ getLieferungen(int lieferId)
+        + Iterable~Lieferung~ getLieferungen(Produkt produkt)
+        + void addProdukt(Produkt produkt)
+        + void addPfandwert(Pfandwert pfandwert)
+        + void addBestellung(Bestellung bestellung)
+        + void addPrice(Preis preis)
+        + void addLieferung(Lieferung lieferung)
+        + Optional~Produkt~ getProdukt(UUID id)
+        + Optional~Pfandwert~ getPfandwert(UUID id)
+        + Optional~Bestellung~ getBestellungen(Kunde kunde)
+        + Optional~Preis~ getPreis(Priced obj, double price, LocalDateTime data)
+        + Iterable~Preis~ getPreisForProdukt(Produkt produkt)
+        + void safe() throws Exception
+    }
+class CustomerRepository {
+        + Iterable~Kunde~ getKunden()
+        + Optional~Kunde~ getKunde(UUID id)
+        + Optional~Kunde~ getKunde(String email)
+        + Optional~Zahlungsvorgang~ getZahlungsvorgang(UUID id)
+        + void addKunde(Kunde kunde)
+        + Iterable~Zahlungsvorgang~ getZahlungsvorgaenge()
+        + void addZahlungsVorgang(Zahlungsvorgang zahlungsvorgang)
+    }
+```
+
 ## 7. Unit Tests 
 
 ### 7.1 Zehn Unit Tests - Tabelle 
@@ -893,7 +1053,40 @@ In dem Domain Layer der Applikation wird eine Mock-Klasse genutzt, welche die Fu
 Die Mock-Klasse wird benötigt, um die Logik des Domain Layers zu testen, da darin eine Abhänigkeits zum Repository besteht. Diese Abhänigkeit ist notwendig aus, da der Preis eines Produktes und das Produkt jeweils einen verweis auf das jeweils andere Objekt haben. Dadurch entsteht ein 'Henne-Ei'-Problem, welches mit der Abhänigkeit zum Repository gelöst wird. Diese Abhänigkeit lässt das Produkt checken, ob ein Preis im Repository existiert und wenn dies nicht der Fall ist, wird ein neuer Preis erstellt, bzw. andersherum wird ein Fehler geworfen.
 Dieses Mock-Objekt ermöglicht es diese Logik ordentlich zu testen. Dies ist notwendig, da es eine zentrale Bedingung testet, welche für unser Datenmodell notwendig ist und potentiell bei falscher Bedienung der Anwendung zu Inkonsistenzen führen könnte. 
 
-
+```marmaid
+classDiagram
+    class GetraenkeRepositoryMock {
+        - RepositoryData data
+        - static GetraenkeRepositoryMock instance
+        + GetraenkeRepositoryMock(RepositoryData data)
+        + static GetraenkeRepositoryMock getGetraenkeMockRepo()
+        + Iterable~Produkt~ getProdukte()
+        + Iterable~Pfandwert~ getPfandwerte()
+        + Iterable~Bestellung~ getBestellungen()
+        + Iterable~Lieferung~ getLieferungen()
+        + void addProdukt(Produkt produkt)
+        + void addPfandwert(Pfandwert pfandwert)
+        + void addBestellung(Bestellung bestellung)
+        + void addPreis(Preis preis)
+        + void addLieferung(Lieferung lieferung)
+        + Optional~Produkt~ getProdukt(UUID id)
+        + Optional~Pfandwert~ getPfandwert(UUID id)
+        + Iterable~Preis~ getPreisForProdukt(Produkt produkt)
+        + Iterable~Lieferung~ getLieferungen(Produkt produkt)
+        + Iterable~Lieferung~ getLieferungen(int lieferId)
+        + void safe()
+        + void addPrice(Preis preis)
+        + Optional~Preis~ getPreis(Priced obj, double price, LocalDateTime date)
+        + Optional~Bestellung~ getBestellungen(Kunde kunde)
+        + Iterable~Kunde~ getKunden()
+        + Iterable~Zahlungsvorgang~ getZahlungsvorgaenge()
+        + void addKunde(Kunde kunde)
+        + Optional~Kunde~ getKunde(UUID id)
+        + Optional~Zahlungsvorgang~ getZahlungsvorgang(UUID id)
+        + Optional~Kunde~ getKunde(String email)
+        + void addZahlungsVorgang(Zahlungsvorgang zahlungsvorgang)
+    }
+```
 #### 7.4.2 `KundenInputHandler`
 In den Tests des `KundenInputHandler` werden alle externen Abhängigkeiten durch **Mock-Objekte** ersetzt. Dies ermöglicht eine **isolierte Testbarkeit** der Benutzereingabe-Logik, ohne auf die reale Implementierung der Geschäftslogik oder auf tatsächliche Benutzereingaben angewiesen zu sein. Durch das mocken der der Abhänigkeiten ist der Test vollkommen isoliert von Benutzereingaben oder anderen Methoden. 
 
