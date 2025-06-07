@@ -74,4 +74,7 @@ public class Produkt extends EntityWrapper<Produkt> implements Preis.Priced{
     public String getKategorie() {
         return kategorie;
     }
+    public Preis getPreis(){
+        return this.preis;
+    }
 }

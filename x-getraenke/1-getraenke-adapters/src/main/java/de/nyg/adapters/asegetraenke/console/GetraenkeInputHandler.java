@@ -219,7 +219,7 @@ public class GetraenkeInputHandler {
             return;
         }
         Produkt produkt = produktOptional.get();
-        int newPrice = consoleReader.readIntInputWithPrompt("Input new price for product: ");
+        Double newPrice = consoleReader.readDoubleInputWithPrompt("Input new price for product: ");
         if(!consoleReader.acceptInput()){
             return;
         }
@@ -312,13 +312,16 @@ public class GetraenkeInputHandler {
                     Iterable<Produkt> iterableProdukt = getraenkeusecases.getAllProducts();
                     List<Produkt> produktsList = StreamSupport.stream(iterableProdukt.spliterator(), false).collect(Collectors.toList());
                     Optional<Produkt> produktOptional = produktPicker.pickOneFromList(produktsList, Produkt::toString);
+                    if(!produktOptional.isPresent()){
+                        consoleError.errorNoProdukt();
+                        continue;
+                    }
                     int amount = consoleReader.readIntInputWithPrompt("Wie viele Produkte: ");
-                    Double value = consoleReader.readDoubleInputWithPrompt("Wie viel kostetet das Produkt: ");
-                    bestellungsList.add(new Triple<Produkt,Integer,Double>(produktOptional.get(), amount, value));
+                    bestellungsList.add(new Triple<Produkt,Integer,Double>(produktOptional.get(), amount, produktOptional.get().getPreis().getPrice()));
                     break;
                 } catch (Exception e) {
-                    System.out.println("Error try this product again");
                     System.out.println(e.getMessage());
+                    break;
                 }
             }
         }
