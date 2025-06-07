@@ -1551,44 +1551,74 @@ classDiagram
 ### 8.2.2 Extract Method
 
 **Begründung:**  
-In der Methode wie z.B. `handleAddProduktInput()` war die gesamte Benutzerinteraktion und Objekterstellung inline implementiert. Durch das Refactoring wurde ein Teil der Logik – z. B. das Einlesen der Produktinformationen – in eine eigene Methode ausgelagert. Das verbessert die Übersichtlichkeit und ermöglicht einfachere Wiederverwendung und Tests.
+In der Methode wie z.B. `addBestellung(Kunde, Iterable<Tiple<Produkt, Integer, Double>>)` war das Parsen der Triples zu Bestellungsprodukten direkt in der Methode implementiert. Durch das Refactoring wurde diese Logik in eine separate Methode `parseBestellungsProdukte` ausgelagert. Das verbessert die Lesbarkeit und Wiederverwendbarkeit des Codes, da die Logik nun klar getrennt ist und einfacher getestet werden kann.
 
 **Code vorher:**
 
 ```java
 
-public void handleAddProduktInput() {     
-	String name = ...;     
-	String beschreibung = ...;
-	...    
-	Produkt produkt = new Produkt(name, beschreibung, kategorie);     ... }
+public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
+        ArrayList<BestellungProdukt> prodList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        for(Triple<Produkt,Integer, Double> prod : produkte){
+            Preis preis = grepo.getPreis(prod.first(), prod.value(), now).orElse(null);
+            if(preis == null){
+                preis = new Preis(prod.number(), prod.first());
+                grepo.addPrice(preis);
+            }
+            prodList.add(new BestellungProdukt(prod.first(), preis, prod.value()));
+        }
+        Bestellung b = new Bestellung(kunde, now, prodList);
+        grepo.addBestellung(b);
+        return b;
+    }
 ```
 
 **Code nachher:**
 
 ```java
-public void handleAddProduktInput() {     
-	Produkt produkt = readProduktInput();     
-	... 
-	}  private Produkt readProduktInput() {     String name = ...;     String beschreibung = ...;     ...     return new Produkt(name, beschreibung, kategorie); }`
-```
+public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
+         LocalDateTime now = LocalDateTime.now();
+        ArrayList<BestellungProdukt> prodList =parseBestellungsProdukte(produkte, now);
+        Bestellung b = new Bestellung(kunde, now, prodList);
+        grepo.addBestellung(b);
+        return b;
+    }
+
+    private ArrayList<BestellungProdukt> parseBestellungsProdukte(Iterable<Triple<Produkt, Integer, Double>> produkte, LocalDateTime timestamp) {
+        ArrayList<BestellungProdukt> prodList = new ArrayList<>();
+        for(Triple<Produkt,Integer, Double> prod : produkte){
+            Preis preis = grepo.getPreis(prod.first(), prod.value(), timestamp).orElse(null);
+            if(preis == null){
+                preis = new Preis(prod.number(), prod.first());
+                grepo.addPrice(preis);
+            }
+            prodList.add(new BestellungProdukt(prod.first(), preis, prod.value()));
+        }
+ 
+        return prodList;
+    }```
 
 **Commit:**  
-`a58c90b` – Extraktion der Produkt-Erstellung
+`d466a91601dd9049ba24b728c1355a829e575dc5`  refactor - extraction parseBestellungsProdukte
 
 **UML vorher:**
 
 ```mermaid
 	classDiagram     
-	class GetraenkeInputHandler {         +handleAddProduktInput()     }
+	class GetraenkeUsecases{
+             ...
+             +addBestellung(Kunde, Iterable<Tiple<Produkt, Integer, Double>>)  
+       }
 ```
 
 **UML nachher:**
 
 ```mermaid
 	classDiagram     
-	class GetraenkeInputHandler {         
-	+handleAddProduktInput()        
-	-readProduktInput()     }
+	class GetraenkeUsecases{         
+	+addBestellung(Kunde, Iterable<Tiple<Produkt, Integer, Double>>)      
+	-parseBestellungsProdukte(Iterable<Tiple<Produkt, Integer, Double>>, LocalDateTime)      
+	}
 ```
 
