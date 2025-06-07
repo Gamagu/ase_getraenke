@@ -43,5 +43,25 @@ public class Bestellung extends EntityWrapper<Bestellung>{
         }
         return sum;
     }
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Bestellung Nr. ").append(number).append("\n");
+        builder.append("Kunde: ").append(kunde.getName()).append(" ").append(kunde.getNachname()).append("\n");
+        builder.append("Datum: ").append(timestamp).append("\n");
+        builder.append("Produkte:\n");
+
+        for (BestellungProdukt bp : produkte) {
+            builder.append(" - ")
+                .append(bp.getProdukt().getName())
+                .append(", Menge: ").append(bp.getMenge())
+                .append(", Einzelpreis: ").append(bp.getPreis().getPrice())
+                .append(", Pfand: ").append(bp.getProdukt().getPfandSum())
+                .append("\n");
+        }
+
+        builder.append("Gesamtsumme: ").append(String.format("%.2f", getSumOfOrder())).append(" EUR");
+        return builder.toString();
+    }
 
 }

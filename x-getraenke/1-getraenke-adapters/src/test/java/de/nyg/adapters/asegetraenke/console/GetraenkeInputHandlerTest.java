@@ -127,7 +127,7 @@ public class GetraenkeInputHandlerTest {
         Produkt produkt = mock(Produkt.class);
         when(getraenkeUsecases.getAllProducts()).thenReturn(List.of(produkt));
         when(produktPicker.pickOneFromList(any(), any())).thenReturn(Optional.of(produkt));
-        when(consoleReader.readIntInputWithPrompt(anyString())).thenReturn(42);
+        when(consoleReader.readDoubleInputWithPrompt(anyString())).thenReturn(42d);
         when(consoleReader.acceptInput()).thenReturn(true);
 
         handler.handleSetPriceForProduktInput();
