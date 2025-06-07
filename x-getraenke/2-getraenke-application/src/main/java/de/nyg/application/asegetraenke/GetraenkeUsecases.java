@@ -101,6 +101,7 @@ public class GetraenkeUsecases{
 
     public double setPriceForProdukt(Produkt product, double preis) {
         Preis p = new Preis(preis, product);
+        grepo.addPrice(p);
         product.setPreis(p, grepo);
         return p.getPrice();
     }
@@ -131,18 +132,24 @@ public class GetraenkeUsecases{
     }
 
      public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
+         LocalDateTime now = LocalDateTime.now();
+        ArrayList<BestellungProdukt> prodList =parseBestellungsProdukte(produkte, now);
+        Bestellung b = new Bestellung(kunde, now, prodList);
+        grepo.addBestellung(b);
+        return b;
+    }
+
+    private ArrayList<BestellungProdukt> parseBestellungsProdukte(Iterable<Triple<Produkt, Integer, Double>> produkte, LocalDateTime timestamp) {
         ArrayList<BestellungProdukt> prodList = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
         for(Triple<Produkt,Integer, Double> prod : produkte){
-            Preis preis = grepo.getPreis(prod.first(), prod.value(), now).orElse(null);
+            Preis preis = grepo.getPreis(prod.first(), prod.value(), timestamp).orElse(null);
             if(preis == null){
                 preis = new Preis(prod.number(), prod.first());
                 grepo.addPrice(preis);
             }
             prodList.add(new BestellungProdukt(prod.first(), preis, prod.value()));
         }
-        Bestellung b = new Bestellung(kunde, now, prodList);
-        grepo.addBestellung(b);
-        return b;
+ 
+        return prodList;
     }
 }
