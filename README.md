@@ -123,87 +123,94 @@ Das Projekt ist in der Struktur so aufgebaut, dass es nicht möglich ist gegen d
 ```
 
 #### 2.3.1 Positiv Beispiel : `GetraenkeUsecases`
+Die Klasse `GetraenkeUsecases` ist ein gutes Beispiel für die korrekte Umsetzung der **Dependency Rule** aus der Clean Architecture. Sie gehört zur Anwendungsschicht und hängt ausschließlich von **weiter innen liegenden Schichten** – insbesondere von der Domäne (`Produkt`, `Preis`, `Pfandwert`) und den Repositories (`GetraenkeRepository`, `CustomerRepository`) ab.
 ```mermaid
 classDiagram
-    class GetraenkeUsecases {
-		-grepo: GetraenkeRepository 
-		-crepo: CustomerRepository 
-		+GetraenkeUsecases(grepo: GetraenkeRepository, crepo: CustomerRepository) 
-		+acceptLieferung(produkte: Iterable~Pair~<Produkt, Integer>, date: LocalDateTime): void 
-		+addPfandWert(beschreibung: String, wert: double): void 
-		+setPfandwert(pfandwert: Pfandwert, newValue: double): Pfandwert 
-		+setPfandwertProdukt(produkt: Produkt, pfandliste: Iterable~Pfandwert~): void +getAllPfandwerte(): Iterable~Pfandwert~ 
-		+getPfandWert(id: UUID): Optional~Pfandwert~ +getAllProducts(): Iterable~Produkt~ +getPriceForProdukt(product: Produkt): Preis 
-		+getPriceHistoryForProdukt(product: Produkt): Iterable~Preis~ 
-		+setPriceForProdukt(product: Produkt, preis: double): double 
-		+getStockAmountForProdukt(product: Produkt): int 
-		+getAmountLieferungenForProdukt(product: Produkt): int 
-		+getOrderedAmountForProdukt(product: Produkt): int 
-		+addProdukt(name: String, beschreibung: String, kategorie: String, preis: double): void 
-		+getProduct(produktId: UUID): Optional~Produkt~ 
-		+addBestellung(kunde: Kunde, produkte: Iterable~Triple~<Produkt, Integer, Double>): Bestellung
-    }
+class GetraenkeUsecases {
+    - GetraenkeRepository grepo
 
-class GetraenkeRepository { <<interface>> } 
-class CustomerRepository { <<interface>> } 
-class Produkt { ... } 
-class Pfandwert { ... } 
-class Preis { ... } 
-class Pair { ... } 
-class Triple { ... } 
-class Kunde { ... } 
-class Bestellung { ... } 
-class Lieferung { ... }
+    + addProdukt(Produkt, double)
+    + getAllProducts()
+    + setPfandwertProdukt(Produkt, Iterable<Pfandwert>)
+    + getStockAmountForProdukt(Produkt)
+    + addBestellung(Kunde, Iterable<Triple>)
+    + ...
+}
 
-GetraenkeUsecases --> GetraenkeRepository 
-GetraenkeUsecases --> CustomerRepository 
-GetraenkeUsecases --> Produkt 
-GetraenkeUsecases --> Pfandwert 
-GetraenkeUsecases --> Preis 
-GetraenkeUsecases --> Pair 
-GetraenkeUsecases --> Triple 
-GetraenkeUsecases --> Kunde 
-GetraenkeUsecases --> Bestellung 
-GetraenkeUsecases --> Lieferung
+class GetraenkeRepository
+class Produkt
+class Preis
+class Pfandwert
+class Bestellung
+class Kunde
+
+GetraenkeUsecases --> GetraenkeRepository
+GetraenkeUsecases --> Produkt
+GetraenkeUsecases --> Preis
+GetraenkeUsecases --> Pfandwert
+GetraenkeUsecases --> Bestellung
+GetraenkeUsecases --> Kunde
+
 ```
 
 **Analyse:**
 - **Abhängigkeiten:** Die Klasse `GetraenkeUsecases` hängt von mehren Entities der Domain Schicht ab und von den zwei Interfaces  `GetraenkeRepository`  und  `CustomerRepository` ab. 
-- **Einhaltung Dependency Rule:** Die Klasse `GetraenkeUsecases` hat keine Dependencies nach außen. Sie befindet sich auf der Applikations-Schicht und hat nur Abhängigkeiten auf der Domain-Schicht. Somit verlaufen die Abhängigkeiten wie laut der Regel definiert ausschließlich von Innen nach Außen.
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
-#### 2.3.2 Positiv Beispiel : `KundenUsecases`
+- **Einhaltung Dependency Rule:** Die Klasse kennt weder Adapter noch Framework-spezifische Details (wie Konsole, UI oder Datenbank). Alle Abhängigkeiten verlaufen **von außen nach innen**, was genau dem Ziel der Dependency Rule entspricht:
+#### 2.3.2 Negativ Beispiel : `KundenUsecases`
+Die Klasse `KundenInputHandler` verstößt nicht gegen die klassische **Dependency Rule** der Clean Architecture, da sie nur von inneren Schichten abhängt (z. B. `KundenUsecases`). Jedoch liegt ein anderes Architekturproblem vor: **starke Kopplung innerhalb der eigenen Schicht (Adapter/Konsole)**.
 ```mermaid
 classDiagram
-    class KundenUsecases {
-	-grepo: GetraenkeRepository 
-	-crepo: CustomerRepository 
-	+KundenUsecases(grepo: GetraenkeRepository, crepo: CustomerRepository) 
-	+createKunde(name: String, nachname: String, eMail: String): Kunde 
-	+getAllKunden(): Iterable~Kunde~ +setName(kunde: Kunde, name: String, nachname: String): void 
-	+getKunde(eMail: String): Optional~Kunde~ +getKundenBalance(kunde: Kunde): double 
-	+getKundenOrderSum(kunde: Kunde): double 
-	+getKundenZahlungenSum(kunde: Kunde): double 
-	+getAllZahlungen(kunde: Kunde): Iterable~Zahlungsvorgang~ 
-	+getAllBestellungen(kunde: Kunde): Iterable~Bestellung~ 
-	+addZahlungsvorgang(kunde: Kunde, zahlungsweg: String, betrag: double, date: LocalDateTime): Zahlungsvorgang 
-	}
+class KundenInputHandler {
+    - KundenUsecases kundeUseCases
+    - ConsoleError consoleError
+    - ConsoleReader consoleReader
+    - ConsolePrinter consolePrinter
+    - EntityPicker<Kunde> kundenPicker
+    - CommandRegistrar registrar
 
-class GetraenkeRepository { <<interface>> } 
-class CustomerRepository { <<interface>> } 
-class Kunde { ... } 
-class Bestellung { ... } 
-class Zahlungsvorgang { ... }
+    + handleCreateKundeInput()
+    + handleGetAllKundenInput()
+    + handleSetNameInput()
+    + handleGetKundeInput()
+    + handleGetKundenBalanceInput()
+    + handleGetAllBestellungenInput()
+}
 
-KundenUsecases --> GetraenkeRepository 
-KundenUsecases --> CustomerRepository 
-KundenUsecases --> Kunde 
-KundenUsecases --> Bestellung 
-KundenUsecases --> Zahlungsvorgang
+class ConsoleReader
+class ConsolePrinter
+class ConsoleError
+class EntityPicker
+class CommandRegistrar
+
+KundenInputHandler --> ConsoleReader
+KundenInputHandler --> ConsolePrinter
+KundenInputHandler --> ConsoleError
+KundenInputHandler --> EntityPicker
+KundenInputHandler --> CommandRegistrar
 
 ```
-- **Abhängigkeiten:** Genauso wie die Klasse zuvor hat die Klasse `KundenUsecases` Abhängigkeiten zu Entities der Domain-Schicht  und zu den Interfaces `GetraenkeRepository` und `CustomerRepository`. 
-- **Einhaltung der Dependency Rule:** Die Klasse `KundenUsecases` hat keine Dependencies nach außen. Sie befindet sich auf der Applikations-Schicht und hat nur Abhängigkeiten auf der Domain-Schicht. Genauso wie zuvor verlaufen die Abhängigkeiten ausschließlich von Innen nach Außen
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+**Problematisch ist hier** die enge Kopplung zu vielen konkreten Implementierungen innerhalb der Adapterschicht (z. B. Konsole). Änderungen an `ConsoleReader` oder `ConsolePrinter` können sich direkt auf `KundenInputHandler` auswirken. Auch alternative UI-Kanäle (z. B. Web-GUI, REST) lassen sich nur schwer integrieren, da die Logik an konkrete Konsolenklassen gebunden ist. 
+
+Statt konkrete Klassen der Konsole direkt zu verwenden, sollte `KundenInputHandler` nur von abstrahierten Interfaces abhängen, die typischerweise in einem separaten _Port-Paket_ liegen. Die konkrete Konsole wäre dann eine Implementierung dieser Interfaces.
+```mermaid
+classDiagram
+class KundenInputHandler {
+    - IKundenUsecases kundeUseCases
+    - IConsoleReader reader
+    - IConsolePrinter printer
+    - IKundenPicker picker
+
+    ...
+}
+
+interface IConsoleReader
+interface IConsolePrinter
+interface IKundenPicker
+
+KundenInputHandler --> IConsoleReader
+KundenInputHandler --> IConsolePrinter
+KundenInputHandler --> IKundenPicker
+```
 
 ## 3. SOLID 
 
@@ -231,434 +238,403 @@ CommandRegistrar --> KundenInputHandler
 ```
 **Analyse:**
 Der `ConsoleAdapter`can einfach um neue Befehle erweitert werden. Die Befehle können hinzugefügt werden indem neue Klassen erstellt werden und die Methoden mit der Annotation `@Command(value = "getstockamountforprodukt", category = "getraenke")` ausgestattet werde. Die Klasse selbst muss sich dann allerdings noch bei dem `CommandRegistrar` selbst übergeben. Dieser Speicher dann den Namen und die Kategorie für die spätere Ausgabe. Das hinzufügen der Methoden kann in der neu eigefügten Klasse erfolgen und benötigt keine Änderungen an der `ConsoleAdapter` Klasse.
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
-#### 3.1.2 Negatives Beispiel `ConsoleUtils`
+#### 3.1.2 Negatives Beispiel `ConsoleError`
 
 ```mermaid
-	classDiagram 
-		class ConsoleUtils { 
-			- Scanner scanner 
-			- IGetraenkeUsecases getraenkeUseCases 
-			- IKundenUsecases kundeUseCases 
-			+ ConsoleUtils(Scanner scanner, IGetraenkeUsecases getraenkeUseCases, IKundenUsecases kundeUseCases) 
-			+ Optional<Produkt> pickOneProductFromAllProducts() 
-			+ Optional<Pfandwert> pickOnePfandwertFromAllPfandwerts() 
-			+ Optional<Kunde> pickOneUserFromAllUsers() 
-			+ void printProduktWithNumber(Produkt produkt, int number) 
-			+ void printPfandwertWithNumber(Pfandwert pfandwert, int number) 
-			+ void printKundeWithNumber(Kunde kunde, int number) 
-			+ int readIntInputWithPrompt(String prompt) 
-			+ Double readDoubleInputWithPrompt(String prompt) 
-			+ String readStringInputWithPrompt(String ptompString) 
-			+ boolean acceptInput() 
-			+ void errorNoPfandWert() 
-			+ void errorNoKunden() 
-			+ void errorNoProdukt() } 
-		class Produkt { ... } 
-		class Pfandwert { ... } 
-		class Kunde { ... } 
-		class IGetraenkeUsecases { <<interface>> } 
-		class IKundenUsecases { <<interface>> } 
-		
-		ConsoleUtils --> Scanner 
-		ConsoleUtils --> IGetraenkeUsecases 
-		ConsoleUtils --> IKundenUsecases 
-		ConsoleUtils --> Produkt 
-		ConsoleUtils --> Pfandwert 
-		ConsoleUtils --> Kunde
+	classDiagram
+class ConsoleError {
+	- String NOPRODUKTMESSAGE
+	- String NOPFANDWERTMESSAGE
+	- String NOKUNDEMESSAGE
+
+	+ void errorNoProdukt()
+	+ void errorNoPfandWert()
+	+ void errorNoKunden()
+}
 
 ```
 **Analyse:**
-`ConsoleUtils` erlaubt keine Erweiterung ohne in der eigentliche Funktion Änderungen durchzuführen. Sie verstößt außerdem gegen mehrere Prinzipien, da sie darüber hinaus schlecht benannt ist und für mehre Aufgaben übernimmt dazu gehören. das Ein- und Auslesen, Bestätigungsabfragen und Auswahl von verschiedenen Entities. Diese Beziehen sich zwar alle auf die Reine Interaktionen des Benutzer mit der Console kann allerdings deutlich eleganter gelöst werden. 
+Die Klasse `ConsoleError` gibt feste Fehlermeldungen über einzelne Methoden aus. Mit jeder neuen Fehlerart muss die Klasse erweitert werden – etwa für Eingabefehler, leere Felder oder ungültige Formate. Dadurch wird sie bei wachsender Systemkomplexität immer umfangreicher und verletzt das Open/Closed Principle. Die Klasse ist nicht für Erweiterungen offen, sondern muss ständig verändert werden.
+
 
 **Lösungsvorschlag:**
-Vorerst sollte erwähnt werden , dass die Funktion erstmal unterteilt werden sollte in Folgende Klassen. Zuerst sollte die Klasse unterteilt werden in:
+Statt alle Fehler zentral zu verwalten, sollte jede Fehlerart als eigene Klasse mit gemeinsamer Schnittstelle (`ErrorMessage`) umgesetzt werden. Ein `ErrorDispatcher` ruft dann polymorph `printError()` auf. Neue Fehler werden durch neue Klassen ergänzt – ohne Änderungen am bestehenden Code.
 ```mermaid
-	classDiagram 
-		class ReadManagerImpl {
-			+ readIntInputWithPrompt(String): Int
-			+ readDoubleInputWithPrompt(String): Double
-			+ readStringInputWithPrompt(String): String
-		} 
-		
-		class WriteMangerImpl { 
-			+ printProduktWithNumber(Produkt, Int): void
-			+ printPfandwertWithNumber(Pfandwert, Int): void
-			+ printKundeWithNumber(Kunde, Int)
-		 
-		} 
-```
-```mermaid
-	classDiagram 
-		
-		class PickManagerImpl { 
-			+ pickOneProductFromAllProducts(): Produkt
-			+ pickOnePfandwertFromAllPfandwerts(): Pfandwert
-			+ pickOneUserFromAllUsers(): User
-		} 
-
-		class ErrorManagerImpl {
-			+ acceptInput(): boolean
-			+ errorNoKunde(): void
-			+ errorNoPfandwert(): void
-			+ errorNoProdukt(): void
+	classDiagram
+		class ErrorMessage { <<interface>>
+			+ void printError()
 		}
-
-```
-
-Wenn wir nun die Erweiterung der Elemente erlauben z.B. anhand von `ReadManagerImpl`. Durch des extenden der `ReadManagerImpl` würde dann ermöglicht werden neue Funktionalitäten hinzuzufügen.
-
-```mermaid
-	classDiagram 
-		class ReadManagerImpl{...}
-		class GetraenkeUsecases { ... } 
-		class KundenUsecases { ... } 
-
-		class ReadMangerKundenImpl{...}
-		class ReadMangerProduktImpl{...}
-
-
-		ReadManagerImpl --> GetraenkeUsecases
-		ReadManagerImpl --> KundenUsecases
-		ReadMangerKundenImpl <|-- ReadManagerImpl
-		ReadMangerProduktImpl <|-- ReadManagerImpl
 		
-```
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+		class NoProduktError {
+			+ void printError()
+		}
+		
+		class ErrorDispatcher {
+			+ void dispatch(ErrorMessage)
+		}
+		
+		NoProduktError ..|> ErrorMessage
+		ErrorDispatcher --> ErrorMessage
 
-Verbessert in : `Commit Stand: 5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
+```
+So bleibt das System offen für neue Fehlerarten und erfüllt das Open/Closed Principle.
+
 ### 3.2 Interface Segregation Principle (ISP)
 
 #### 3.2.1 Positives Beispiel `KundenInputHandler`
-Die Klasse `KundenInputHandler` ist ein gutes Beispiel für das Interface Segregation Principle (ISP). Sie hängt nur von den Interfaces `IKundenUsecases`, `IConsoleUtils` und `ICommandRegistrar` ab und nutzt jeweils nur die für sie relevanten Methoden. Dadurch ist sichergestellt, dass `KundenInputHandler` nicht gezwungen ist, Methoden zu implementieren oder zu kennen, die für ihn nicht notwendig sind. Jedes Interface ist also spezifisch und nicht überladen.
+Die Klasse `KundenInputHandler` folgt dem Interface Segregation Principle (ISP) in ihrer Architekturidee. Sie arbeitet konzeptionell mit voneinander getrennten Schnittstellen: `IKundenUsecases` zur Geschäftslogik, `ICommand` für die Befehlsregistrierung und (im erweiterten Design) mit konsolenspezifischen Interfaces wie `IConsoleReader`, `IConsolePrinter` oder `IEntityPicker`. Damit ist sichergestellt, dass jede Abhängigkeit **nur die jeweils benötigte Funktionalität bereitstellt** – ohne Clients mit unnötigen Methoden zu belasten.
+
+Im aktuellen Code sind zwar noch konkrete Implementierungen (`ConsoleReader`, `ConsolePrinter` etc.) eingebunden, doch diese sind **strukturell bereits trennbar**, sodass eine Interface-basierte Auslagerung ohne Bruch möglich ist. So bleibt der Handler unabhängig, modular und testbar – ganz im Sinne des ISP.
 ```mermaid
 classDiagram
 	class KundenInputHandler {
 		- IKundenUsecases kundeUseCases
-		- IConsoleUtils consoleUtils
+		- IConsoleReader consoleReader
+		- IConsolePrinter consolePrinter
+		- IConsoleError consoleError
+		- IEntityPicker~Kunde~ kundenPicker
 		- ICommandRegistrar registrar
-		~ KundenInputHandler(IKundenUsecases, IConsoleUtils, ICommandRegistrar)
-		+ void handleCreateKundeInput()
-		+ void handleGetAllKundenInput()
-		+ void handleSetNameInput()
-		+ void handleGetKundeInput()
-		+ void handleGetKundenBalanceInput()
-		+ void handleGetAllBestellungenInput()
+
+		+ handleCreateKundeInput()
+		+ handleGetAllKundenInput()
+		+ handleSetNameInput()
+		+ handleGetKundeInput()
+		+ handleGetKundenBalanceInput()
+		+ handleGetAllBestellungenInput()
 	}
 
-	class IKundenUsecases
-	class IConsoleUtils
-	class ICommandRegistrar
+	interface IKundenUsecases
+	interface IConsoleReader
+	interface IConsolePrinter
+	interface IConsoleError
+	interface IEntityPicker
+	interface ICommandRegistrar
 
 	KundenInputHandler --> IKundenUsecases
-	KundenInputHandler --> IConsoleUtils
+	KundenInputHandler --> IConsoleReader
+	KundenInputHandler --> IConsolePrinter
+	KundenInputHandler --> IConsoleError
+	KundenInputHandler --> IEntityPicker
 	KundenInputHandler --> ICommandRegistrar
+
 ```
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
-#### 3.1.2 Negatives Beispiel `CommandRegistrar`
-Die Klasse `ConsoleUtils` verstößt gegen das Interface Segregation Principle, da sie Methoden für ganz unterschiedliche Aufgaben bündelt: Einlesen, Ausgabe, Auswahl und Fehlerbehandlung. Dadurch werden andere Klassen gezwungen, ein breites Interface zu kennen und ggf. zu verwenden, auch wenn sie nur Teilfunktionalität brauchen.
+#### 3.1.2 Negatives Beispiel `GetraenkeUsecases`
+Die Klasse `GetraenkeInputHandler` verstößt gegen das Interface Segregation Principle, da sie Methoden für völlig unterschiedliche Aufgabenbereiche enthält: Produktverwaltung, Preis- und Pfandlogik, Lagerabfragen, Bestellungen und sogar Zahlungen. Dadurch ist sie von mehreren großen Komponenten (`GetraenkeUsecases`, `KundenUsecases`) abhängig – selbst wenn einzelne Methoden nur auf eine dieser Domänen zugreifen. Andere Klassen oder Entwickler werden gezwungen, ein breites Interface zu kennen und mit Methoden zu interagieren, die für ihre jeweilige Aufgabe irrelevant sind.
 ```mermaid
 classDiagram
-	class ConsoleUtils {
-		- Scanner scanner
-		- IGetraenkeUsecases getraenkeUseCases
-		- IKundenUsecases kundeUseCases
+class GetraenkeInputHandler {
+	- GetraenkeUsecases getraenkeUsecases
+	- KundenUsecases kundenUsecases
+	- ConsoleError consoleError
+	- ConsoleReader consoleReader
+	- ConsolePrinter consolePrinter
+	- EntityPicker<Kunde> kundenPicker
+	- EntityPicker<Produkt> produktPicker
+	- EntityPicker<Pfandwert> pfandwertPicker
 
-		+ Optional pickOneProductFromAllProducts()
-		+ Optional pickOnePfandwertFromAllPfandwerts()
-		+ Optional pickOneUserFromAllUsers()
-		+ void printProduktWithNumber(Produkt produkt, int number)
-		+ void printPfandwertWithNumber(Pfandwert pfandwert, int number)
-		+ void printKundeWithNumber(Kunde kunde, int number)
-		+ int readIntInputWithPrompt(String prompt)
-		+ Double readDoubleInputWithPrompt(String prompt)
-		+ String readStringInputWithPrompt(String prompt)
-		+ boolean acceptInput()
-		+ void errorNoPfandWert()
-		+ void errorNoKunden()
-		+ void errorNoProdukt()
-	}
+	+ handleAddProduktInput()
+	+ handleSetPriceForProduktInput()
+	+ handleGetAllProductsInput()
+	+ handleAddPfandWertInput()
+	+ handleSetPfandwertInput()
+	+ handleSetPfandwertProduktInput()
+	+ handleAddBestellungInput()
+	+ handleAddZahlungsvorgangInput()
+	...
+}
 
-	class IGetraenkeUsecases
-	class IKundenUsecases
-	class Produkt
-	class Pfandwert
-	class Kunde
+class GetraenkeUsecases
+class KundenUsecases
+class ConsoleError
+class ConsoleReader
+class ConsolePrinter
+class EntityPicker
 
-	ConsoleUtils --> IGetraenkeUsecases
-	ConsoleUtils --> IKundenUsecases
-	ConsoleUtils --> Produkt
-	ConsoleUtils --> Pfandwert
-	ConsoleUtils --> Kunde
+GetraenkeInputHandler --> GetraenkeUsecases
+GetraenkeInputHandler --> KundenUsecases
+GetraenkeInputHandler --> ConsoleError
+GetraenkeInputHandler --> ConsoleReader
+GetraenkeInputHandler --> ConsolePrinter
+GetraenkeInputHandler --> EntityPicker
+
 ```
-Die Klasse sollte in kleinere, spezialisierte Klassen bzw. Interfaces aufgeteilt werden:
-- `ReadManager`: für das Einlesen von Daten
-- `WriteManager`: für die formatierte Ausgabe
-- `PickManager`: für Auswahlfunktionen
-- `ErrorManager`: für Fehlermeldungen
-So könnte z. B. `KundenInputHandler` nur `ReadManager` und `PickManager` verwenden, ohne mit unnötigen Methoden konfrontiert zu werden.
+
+Die Klasse sollte in kleinere, spezialisierte Handler aufgeteilt werden:
+- `ProduktInputHandler`: für produktbezogene Operationen
+- `PfandwertInputHandler`: für Pfandwertverwaltung
+- `BestellungInputHandler`: für Bestellvorgänge
+- `ZahlungInputHandler`: für Zahlungsverarbeitung
+
+Neues UML-Diagramm am Beispiel zweier Klassen für die Übersicht:
+```mermaid
+classDiagram
+class ProduktInputHandler {
+	- GetraenkeUsecases getraenkeUsecases
+	- ConsoleReader consoleReader
+	- ConsolePrinter consolePrinter
+	- ConsoleError consoleError
+	- EntityPicker<Produkt> produktPicker
+
+	+ handleAddProduktInput()
+	+ handleSetPriceForProduktInput()
+	+ handleGetAllProductsInput()
+	+ handleGetProductInput()
+	+ handleGetPriceForProduktInput()
+	+ handleGetPriceHistoryForProduktInput()
+	+ handleGetStockAmountForProduktInput()
+}
+
+class ZahlungInputHandler {
+	- KundenUsecases kundenUsecases
+	- ConsoleReader consoleReader
+	- ConsoleError consoleError
+	- EntityPicker<Kunde> kundenPicker
+
+	+ handleAddZahlungsvorgangInput()
+}
+
+class GetraenkeUsecases
+class KundenUsecases
+class ConsoleReader
+class ConsolePrinter
+class ConsoleError
+class EntityPicker
+
+ProduktInputHandler --> GetraenkeUsecases
+ProduktInputHandler --> ConsoleReader
+ProduktInputHandler --> ConsolePrinter
+ProduktInputHandler --> ConsoleError
+ProduktInputHandler --> EntityPicker
+
+ZahlungInputHandler --> KundenUsecases
+ZahlungInputHandler --> ConsoleReader
+ZahlungInputHandler --> ConsoleError
+ZahlungInputHandler --> EntityPicker
+
+```
+So könnte z. B. `ProduktInputHandler` ausschließlich mit `GetraenkeUsecases` arbeiten, ohne Methoden aus der Kundenverwaltung mitziehen zu müssen. Das reduziert die Kopplung, erhöht die Testbarkeit und entspricht dem Interface Segregation Principle.
 
 ### 3.3 Single Responsibility Principle (SRP)
-#### 3.3.1 Positives Beispiel `KundenInputHandler`
-
-```mermaid 
-	classDiagram 
-		class KundenInputHandler { 
-			- KundenUsecases kundeUseCases 
-			- ConsoleUtils consoleUtils
-			- ~KundenInputHandler(IKundenUsecases kundeUseCases, IConsoleUtils consoleUtils, ICommandRegistrar registrar) 
-			+ void handleCreateKundeInput() 
-			+ void handleGetAllKundenInput() 
-			+ void handleSetNameInput() 
-			+ void handleGetKundeInput() 
-			+ void handleGetKundenBalanceInput() 
-			+ void handleGetAllBestellungenInput() 
-		} 
+#### 3.3.1 Positives Beispiel `Tripel`
+```mermaid
+classDiagram
+		class KundenInputHandler {
+		+ public record Triple<K,V,N>(K first, V value, N number) 
+		}
 ```
 
 **Aufgabenbereich:**
-Diese Klasse erfüllt das SRP Prinzip, da sie ausschließlich die kundenbezogenen Daten der Ein- und der Ausgabe verwalten. Aufgaben wie das tatsächliche Ausgeben, das Einlesen oder andere Teile der Entities zu verwalten sind nicht Teil der Klasse. Somit ist das ihre einzige Aufgabe und befolgt das Prinzip der SRP. 
+Die Klasse `Triple<K,V,N>` erfüllt das **Single-Responsibility-Prinzip (SRP)**, da sie ausschließlich zur strukturierten Speicherung von drei miteinander verbundenen Werten dient. Sie verwaltet weder die Ein- noch die Ausgabe noch führt sie logische Operationen durch. Ihre einzige Verantwortung besteht darin, ein Tupel aus drei Werten unterschiedlicher Typen bereitzustellen. Dadurch ist ihre Aufgabe klar abgegrenzt und das SRP wird eingehalten.
 
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
 #### 3.3.2 Negatives Beispiel `GetraenkeRepositoryImpl`
-
+Die Klasse `GetraenkeRepositoryImpl` verstößt deutlich gegen das **Single Responsibility Principle (SRP)**, da sie Verantwortlichkeiten für verschiedene, unabhängige Domänenobjekte bündelt. Sie enthält Methoden zur Verwaltung von `Produkt`, `Pfandwert`, `Preis`, `Lieferung` und `Bestellung` – also fünf völlig unterschiedliche Entity-Typen.
 ```mermaid 
-	classDiagram 
-		class GetraenkeRepositoryImpl { 
-		- RepositoryData data ~GetraenkeRepositoryImpl(RepositoryData data) 
-		+ Iterable~Produkt~ getProdukte() 
-		+ Iterable~Pfandwert~ getPfandwerte() 
-		+ Iterable~Bestellung~ getBestellungen() 
-		+ Iterable~Lieferung~ getLieferungen() 
+classDiagram 
+	class GetraenkeRepositoryImpl { 
+		- RepositoryData data
+
+		+ Iterable<Produkt> getProdukte() 
+		+ Optional<Produkt> getProdukt(UUID id) 
 		+ void addProdukt(Produkt produkt) 
-		+ void addPfandwert(Pfandwert pfandwert) 
-		+ void addBestellung(Bestellung bestellung) 
-		+ void addPreis(Preis preis) 
-		+ void addLieferung(Lieferung lieferung) 
-		+ Optional~Produkt~ getProdukt(UUID id) 
-		+ Optional~Pfandwert~ getPfandwert(UUID id) 
-		+ Bestellung getBestellungen(UUID id) 
-		+ Iterable~Preis~ getPreisForProdukt(Produkt produkt) 
-		+ Iterable~Lieferung~ getLieferungen(Produkt produkt) 
-		+ Iterable~Lieferung~ getLieferungen(int lieferId) 
-		+ void safe() 
-		+ void addPrice(Preis preis) 
-		+ Optional~Preis~ getPreis(Priced obj, double price, LocalDateTime date) 
-		+ Optional~Bestellung~ getBestellungen(Kunde kunde) } 
+
+		+ Iterable<Pfandwert> getPfandwerte() 
+		+ Optional<Pfandwert> getPfandwert(UUID id) 
+		+ void addPfandwert(Pfandwert pfandwert)
+
+		+ Iterable<Preis> getPreisForProdukt(Produkt produkt)
+		+ Optional<Preis> getPreis(Priced obj, double price, LocalDateTime date)
+		+ void addPreis(Preis preis)
+		+ void addPrice(Preis preis)
+
+		+ Iterable<Bestellung> getBestellungen()
+		+ Optional<Bestellung> getBestellungen(Kunde kunde)
+		+ Bestellung getBestellungen(UUID id)
+		+ void addBestellung(Bestellung bestellung)
+
+		+ Iterable<Lieferung> getLieferungen()
+		+ Iterable<Lieferung> getLieferungen(Produkt produkt)
+		+ Iterable<Lieferung> getLieferungen(int lieferId)
+		+ void addLieferung(Lieferung lieferung)
+
+		+ void safe()
+	}
+ 
 ```
 **Analyse:**
-Diese Klasse `GetraenkeRepositoryImpl` kümmert sich um unterschiedliche Entities und verletzt deswegen . Außerdem könnte man diese dann nachdem Auflösen in die Einzelnen Entities, dann nach Auslesen und Einlesen unterteilen. 
-
-```mermaid 
-	classDiagram 
-		class GetraenkeRepositoryImpl { 
-			- RepositoryData data ~GetraenkeRepositoryImpl(RepositoryData data) 
-			+ Iterable~Produkt~ getProdukte() 
-			+ void addProdukt(Produkt produkt) 
-			+ Optional~Produkt~ getProdukt(UUID id) 
-			+ void safe() 
-		}
-		
-		class PfandwertRepositoryImpl {
-			+ Optional~Pfandwert~ getPfandwert(UUID id) 
-			+ void addPfandwert(Pfandwert pfandwert) 
-			+ Iterable~Pfandwert~ getPfandwerte() 
-		}
-
-		class BestellungRepositoryImpl {
-			+ Optional~Bestellung~ getBestellungen(Kunde kunde) 
-			+ Bestellung getBestellungen(UUID id) 
-			+ void addBestellung(Bestellung bestellung) 
-			+ Iterable~Bestellung~ getBestellungen() 
-		}
-
-```
-```mermaid 
-	classDiagram 
-		class PriceRepositoryImpl {
-			+ void addPrice(Preis preis) 
-			+ Optional~Preis~ getPreis(Priced obj, double price, LocalDateTime date) 
-			+ Iterable~Preis~ getPreisForProdukt(Produkt produkt)
-			+ void addPreis(Preis preis) 
-		}
-
-		class LieferungRepositoryImpl {
-			+ Iterable~Lieferung~ getLieferungen(Produkt produkt) 
-			+ Iterable~Lieferung~ getLieferungen(int lieferId) 
-			+ void addLieferung(Lieferung lieferung) 
-			+ Iterable~Lieferung~ getLieferungen() 
-		}
-	
-```
-
+Die Klasse `GetraenkeRepositoryImpl` ist in ihrer Funktion **nicht kohäsiv**, da sie verschiedenste Speicher- und Zugriffslogik für viele unterschiedliche Aggregate enthält. Änderungen an einer einzigen dieser Domänen – z. B. `Pfandwert` – können **unerwartete Seiteneffekte** auf völlig andere Bereiche wie `Bestellung` oder `Lieferung` haben. Dies erschwert **Wartung, Testbarkeit und Erweiterung** erheblich.
 
 **Lösungsvorschlag:**
-Indem wir die Klasse `GetraenkeRepositoryImpl` in kleiner Klassen aufteilen hier 
-`GetraenkeRepositoryImpl`,  `PfandwertRepositoryImpl`, `BestellungRepositoryImpl`, `PriceRepositoryImpl` und `LieferungRepositoryImpl` aufteilen müssten die Klassen nur noch die Implementation machen die sie auch benötigen. Somit wäre SRP nicht weiter durch die Klasse verletzt
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+Um dem SRP gerecht zu werden, sollte die Klasse in mehrere spezialisierte Repository-Implementierungen aufgeteilt werden. Beispiel:
+```mermaid
+	classDiagram
+		class ProduktRepositoryImpl {
+		+ Iterable<Produkt> getProdukte()
+		+ Optional<Produkt> getProdukt(UUID id)
+		+ void addProdukt(Produkt produkt)
+	}
+
+	class PfandwertRepositoryImpl {
+		+ Iterable<Pfandwert> getPfandwerte()
+		+ Optional<Pfandwert> getPfandwert(UUID id)
+		+ void addPfandwert(Pfandwert pfandwert)
+	}
+
+	class PreisRepositoryImpl {
+		+ Iterable<Preis> getPreisForProdukt(Produkt produkt)
+		+ Optional<Preis> getPreis(Priced obj, double price, LocalDateTime date)
+		+ void addPreis(Preis preis)
+	}
+```
+```mermaid
+classDiagram
+
+	class BestellungRepositoryImpl {
+		+ Iterable<Bestellung> getBestellungen()
+		+ Optional<Bestellung> getBestellungen(Kunde kunde)
+		+ Bestellung getBestellungen(UUID id)
+		+ void addBestellung(Bestellung bestellung)
+	}
+
+	class LieferungRepositoryImpl {
+		+ Iterable<Lieferung> getLieferungen()
+		+ Iterable<Lieferung> getLieferungen(Produkt produkt)
+		+ Iterable<Lieferung> getLieferungen(int lieferId)
+		+ void addLieferung(Lieferung lieferung)
+	}
+
+```
+Durch diese Aufteilung ist jede Klasse für genau eine Entität zuständig. Änderungen an einer Domäne wirken sich nicht mehr auf andere aus, was **Wartung und Erweiterung massiv vereinfacht**.
 ## 4. Weiter Prinzipien
 
-### GRASP: Kopplung
+### 4.1 GRASP: Geringe Kopplung
 
-#### Positives Beispiel: `CustomerRepository`
-```mermaid 
-	classDiagram 
-		class CustomerRepositoryImpl {...}
-		class CustomerRepository {<<interface>>}
-		class Kunde {...}
-		class Zahlungsvorgang {...}
+#### 4.1.1 Positives Beispiel: `Preis`
+**Aufgabenbeschreibung**
+Die Klasse `Preis` ist ein Value Object, das den Preis eines Produkts oder eines anderen "Priced"-Objekts beschreibt. Sie speichert den Preiswert, einen Zeitstempel sowie eine lose referenzierte Quelle (über ein Interface).
+```mermaid
+classDiagram
+	class Preis {
+		- double preis
+		- Priced obj
+		- LocalDateTime time
 
-		CustomerRepositoryImpl --> CustomerRepository
-		CustomerRepository --> Kunde
-		CustomerRepository --> Zahlungsvorgang
+		+ Preis(double, Priced)
+		+ Preis(double, Priced, LocalDateTime)
+		+ double getPrice()
+		+ Priced getParentObject()
+		+ LocalDateTime getCreationDate()
+		+ String toString()
+	}
+
+	interface Priced
+	class Produkt
+
+	Preis --> Priced
+	Produkt ..|> Priced
 ```
 **Analyse:**
+`Preis` kennt kein konkretes Domänenobjekt, sondern arbeitet über das Interface `Priced`. Dadurch wird eine lose Kopplung sichergestellt. Es gibt keine Abhängigkeit zu `Produkt`, keine direkte Bindung an andere Module und keine Vermischung mit Persistenz- oder Anwendungslogik. Die Wiederverwendbarkeit der Klasse ist hoch, sie kann in beliebigen Kontexten eingesetzt werden, in denen Objekte einen Preis tragen sollen.
 
-Diese Verbindung hat wenig Kopplung, da die Implementierung `CustomerRepositoryImpl` nicht direkt von einer Konkretten Implementierung abhängt sondern ein Interface implementiert `CustomerRepository`.  Die ermöglicht  mehre Möglichkeiten für die Implementierung des `CustomerRepository`.
+#### 4.1.2 Negativ Beispiel `Product`
+**Produkt** hat eine zu hohe Kopplung:  
+Die Klasse kennt und verwendet mehrere Komponenten aus unterschiedlichen Schichten, darunter:
+- `Preis`, `Pfandwert` (Value Objects aus dem Domain Layer)
+- `GetraenkeRepository` 
+- `EntityWrapper` 
+- `Preis.Priced`
 
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
-#### Negativ Beispiel `ConsoleUtils`
-**ConsoleUtils** ist ein zentrales Beispiel für zu hohe Kopplung:  
-Sie kennt und verwendet viele verschiedene Klassen und Interfaces, darunter:
-- `Produkt`, `Pfandwert`, `Kunde` (Domain-Entities)
-- `IGetraenkeUsecases`, `IKundenUsecases` (Use Cases)
-- `Scanner` (technische Komponente)
-Die Klasse ist daher mit zu vielen Komponenten des Systems stark gekoppelt. Das erschwert Testbarkeit, Wiederverwendbarkeit und Wartbarkeit.
-```mermaid 
+Das führt zu einer Vermischung von Verantwortlichkeiten (SRP-Verstoß) und einer engen Verflechtung mit der Infrastruktur.
+```mermaid
 classDiagram
-	class ConsoleUtils {
-		- Scanner scanner
-		- IGetraenkeUsecases getraenkeUseCases
-		- IKundenUsecases kundeUseCases
+	class Produkt {
+		- String name
+		- String beschreibung
+		- String kategorie
+		- Preis preis
+		- Iterable<Pfandwert> pfand
 
-		+ Optional pickOneProductFromAllProducts()
-		+ Optional pickOnePfandwertFromAllPfandwerts()
-		+ Optional pickOneUserFromAllUsers()
-		+ void printProduktWithNumber(Produkt produkt, int number)
-		+ void printPfandwertWithNumber(Pfandwert pfandwert, int number)
-		+ void printKundeWithNumber(Kunde kunde, int number)
-		+ int readIntInputWithPrompt(String prompt)
-		+ Double readDoubleInputWithPrompt(String prompt)
-		+ String readStringInputWithPrompt(String prompt)
-		+ boolean acceptInput()
-		+ void errorNoPfandWert()
-		+ void errorNoKunden()
-		+ void errorNoProdukt()
+		+ Preis getCurrentPreis()
+		+ Iterable<Pfandwert> getPfandwert()
+		+ void setPreis(Preis preis, GetraenkeRepository repo)
+		+ void setPfandAssignment(Iterable<Pfandwert> pfand, GetraenkeRepository repo)
+		+ double getPfandSum()
+		+ String toString()
 	}
 
-	class Produkt
+	class Preis
 	class Pfandwert
-	class Kunde
-	class IGetraenkeUsecases
-	class IKundenUsecases
-	class Scanner
+	class GetraenkeRepository
+	class EntityWrapper
+	class Preis.Priced
 
-	ConsoleUtils --> Produkt
-	ConsoleUtils --> Pfandwert
-	ConsoleUtils --> Kunde
-	ConsoleUtils --> IGetraenkeUsecases
-	ConsoleUtils --> IKundenUsecases
-	ConsoleUtils --> Scanner
+	Produkt --> Preis
+	Produkt --> Pfandwert
+	Produkt --> GetraenkeRepository
+	Produkt --> EntityWrapper
+	Produkt --> Preis.Priced
 ```
-**Problematisch ist insbesondere:**
-- Hohe Anzahl an direkten Abhängigkeiten.
-- Enge Kopplung an konkrete Implementierungen.
-- Direkte Verantwortung für viele verschiedene Aufgabenbereiche.
-- Änderungen in Domain-Klassen (z. B. `Produkt`) können sich direkt auf `ConsoleUtils` auswirken.
+**Analyse**
+Die Klasse ist direkt mit dem Repository `GetraenkeRepository` gekoppelt, was bedeutet, dass jede Änderung in der Art, wie Persistenz gehandhabt wird, potenziell Anpassungen in der `Produkt`-Klasse erforderlich macht. Zudem vereint die Klasse zu viele Verantwortungen: Sie ist für die Datenhaltung, für Validierung und Zuweisung von Pfandwerten sowie für Preisverwaltung zuständig. Diese enge Kopplung führt dazu, dass die Klasse schwer zu testen ist und ihre Wiederverwendbarkeit stark eingeschränkt ist.
 
 **Lösungsvorschlag**
-Die Kopplung kann durch die Aufspaltung in **spezialisierte Komponenten** deutlich reduziert werden:
-- `PickManager` (für Auswahl)
-- `ReadManager` (für Eingaben)
-- `WriteManager` (für Ausgaben)
-- `ErrorManager` (für Fehlerhandling)
-Jede dieser Komponenten hängt dann nur noch von einem spezifischen Teil ab – und kann unabhängig weiterentwickelt oder getestet werden.
-
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f` 
-
-Verbessert in `Commit Stand: 5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
-
-### GRASP: High Cohesion `ConsoleUtils`
-
-```mermaid 
+```mermaid
 classDiagram
-class ConsoleUtils {
-		- Scanner scanner
-		- IGetraenkeUsecases getraenkeUseCases
-		- IKundenUsecases kundeUseCases
+	class Produkt {
+		- String name
+		- String beschreibung
+		- String kategorie
+		- Preis preis
+		- Iterable<Pfandwert> pfand
 
-		+ Optional pickOneProductFromAllProducts()
-		+ Optional pickOnePfandwertFromAllPfandwerts()
-		+ Optional pickOneUserFromAllUsers()
-		+ void printProduktWithNumber(Produkt produkt, int number)
-		+ void printPfandwertWithNumber(Pfandwert pfandwert, int number)
-		+ void printKundeWithNumber(Kunde kunde, int number)
-		+ int readIntInputWithPrompt(String prompt)
-		+ Double readDoubleInputWithPrompt(String prompt)
-		+ String readStringInputWithPrompt(String prompt)
-		+ boolean acceptInput()
-		+ void errorNoPfandWert()
-		+ void errorNoKunden()
-		+ void errorNoProdukt()
-	}	
-```
-`Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`
-
-#### Begründung
-
-Die ursprüngliche Klasse `ConsoleUtils` wies eine zu breite Verantwortlichkeit auf: Sie kombinierte Eingabe- und Ausgabelogik, Fehlerbehandlung sowie die Auswahl von Entitäten. Dies führte zu niedriger Kohäsion und erschwerte die Wartbarkeit und Wiederverwendbarkeit.
-Im Refactoring wurde `ConsoleUtils` in vier klar abgegrenzte Klassen aufgeteilt:
-- `ConsoleReader`: Verantwortlich für das Einlesen und Validieren von Benutzereingaben.
-- `ConsolePrinter`: Zuständig für die formatierte Ausgabe von Domänenobjekten.
-- `ConsoleError`: Kapselt die Darstellung von Fehlermeldungen.
-- `EntityPicker`: Bietet generische Auswahlmechanismen aus Listen, unabhängig vom konkreten Typ.
-Jede dieser Klassen konzentriert sich auf eine eng umrissene Aufgabe und verwendet nur die dafür relevanten Attribute und Methoden.
-
-#### Vorteile hoher Kohäsion
-Durch die klare Trennung der Verantwortlichkeiten entstehen Klassen mit hoher Kohäsion: Jede Klasse enthält nur Methoden, die logisch und semantisch zusammengehören. Dies führt zu:
-- **Besserer Lesbarkeit**: Die Intention der Klassen ist sofort erkennbar.
-- **Einfacherer Wiederverwendung**: Komponenten wie `ConsoleReader` oder `EntityPicker` können auch in anderen Kontexten (z. B. Tests, anderer UI) verwendet werden.
-- **Erhöhter Testbarkeit**: Die modularen Klassen lassen sich gezielt und unabhängig voneinander testen.
-- **Reduzierter Wartungsaufwand**: Änderungen in der Eingabe- oder Ausgabelogik betreffen nur einzelne, klar abgegrenzte Klassen.
-
-#### Technische Metriken
-Nach dem Refactoring hat jede der vier Klassen:
-- Eine überschaubare Anzahl an Methoden
-- Eine einheitliche Schnittstelle
-- Eine enge Nutzung ihrer Attribute (z. B. `scanner` nur in `ConsoleReader`)
-Dies sind Indikatoren für eine **hohe Kohäsion** im Sinne von GRASP. Die neue Struktur verbessert die Modularität der Konsoleninteraktion signifikant.
-
-```mermaid 
-classDiagram
-class ConsoleError {
-		+ void errorNoPfandWert()
-		+ void errorNoKunden()
-		+ void errorNoProdukt()
+		+ void setPreis(Preis)
+		+ void setPfand(Iterable<Pfandwert>)
+		+ double getPfandSum()
 	}
-	
-class EntityPicker {
-	- ConsoleReader consoleReader
-	+ public Optional pickOneFromList(List list, Function(T, String) labelFunction) 
-}
+
+	class ProduktManager {
+		- GetraenkeRepository repo
+
+		+ void assignPreisToProdukt(Produkt, double)
+		+ void assignPfandToProdukt(Produkt, Iterable<Pfandwert>)
+	}
+
+	class GetraenkeRepository
+	class Preis
+	class Pfandwert
+
+	Produkt --> Preis
+	Produkt --> Pfandwert
+	ProduktManager --> GetraenkeRepository
+	ProduktManager --> Produkt
 ```
+Die Kopplung kann durch die Aufspaltung in spezialisierte Komponenten deutlich reduziert werden. Die Klasse `Produkt` sollte sich auf ihre Rolle als reines Domänenobjekt beschränken, das lediglich Daten hält. Die Logik zur Zuweisung und Validierung von Preisen und Pfandwerten wird aus der Klasse herausgelöst und in eine separate Komponente wie einen `ProduktManager` überführt. Diese Managerklasse ist für die Interaktion mit dem Repository verantwortlich, während `Produkt` unabhängig von Persistenz und Infrastruktur bleibt. Die so entstehende Entkopplung ermöglicht eine bessere Testbarkeit und leichtere Wartung.
+
+### 4.2 GRASP: High Cohesion
+**Aufgabenbeschreibung:**  
+Die Klasse `Kunde` ist ein Beispiel für hohe Kohäsion im Sinne der GRASP-Prinzipien. Sie erfüllt ausschließlich Aufgaben, die sich direkt auf die Domäne „Kunde“ beziehen. In ihrem Aufbau kapselt sie Eigenschaften wie Vorname, Nachname und E-Mail-Adresse und stellt Methoden zur Verfügung, um auf diese Attribute zuzugreifen oder sie gezielt zu verändern. Darüber hinaus bietet sie mit `toString()` eine stringbasierte Darstellung des Kundenobjekts an. 
 ```mermaid 
 classDiagram
-class ConsoleReader {
-	- Scanner scanner 
-	+ int readIntInputWithPrompt(String prompt)
-	+ Double readDoubleInputWithPrompt(String prompt)
-	+ String readStringInputWithPrompt(String prompt)
-	+ boolean acceptInput()
-}
+	class Kunde {
+		- String name
+		- String nachname
+		- String mail
 
-class ConsolePrinter {
-	+ void printProduktWithNumber(Produkt produkt, int number)
-	+ void printPfandwertWithNumber(Pfandwert pfandwert, int number)
-	+ void printKundeWithNumber(Kunde kunde, int number)
-}
+		+ Kunde(String, String, String)
+		+ void setName(String, String)
+		+ String getName()
+		+ String getNachname()
+		+ String getMail()
+		+ String toString()
+	}
+
+	class EntityWrapper
+
+	Kunde --> EntityWrapper
 ```
-`Commit Stand: 5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
-### Dont Repeat Yourself (DRY
+**Begründung**
+Die Kohäsion der Klasse `Kunde` ist hoch, da alle enthaltenen Elemente einem einzigen thematischen Zusammenhang zugeordnet werden können. Es existieren keine Abhängigkeiten zu Use Cases, Repositories oder Konsoleninteraktionen. Die Klasse ist übersichtlich, modular aufgebaut und erfüllt ausschließlich die Rolle eines Domänenobjekts. Änderungen, die das Datenmodell des Kunden betreffen (z. B. das Hinzufügen weiterer Attribute wie Telefonnummer oder Adresse), können an zentraler Stelle vorgenommen werden, ohne Seiteneffekte in anderen Systembereichen zu verursachen. Die Klasse ist dadurch einfach testbar und leicht verständlich.
+
+### 4.3 Dont Repeat Yourself (DRY)
 #### Begründung
 
 Die ursprüngliche Implementierung der Klasse `ConsoleUtils` verstieß gegen das **DRY-Prinzip (Don't Repeat Yourself)**, da mehrfach identische oder stark ähnliche Logik zur Auswahl und Ausgabe von Entitäten implementiert wurde. Die folgenden Methoden zeigen dieses Muster deutlich:
@@ -801,8 +777,9 @@ Unserer Grund etwas als ein Entity abzubilden ist, wenn die Daten erhalten werde
     - Dabei wird für jede Zahlung der Zahlungsweg, Betrag und der Zeitpunkt gespeichert.
     - Zusätzlich wird ein verweis auf den Kunden gespeichert.
 - Lieferungen
-	- Lieferungen ermöglichen es alle Produkte welche vom Getränktesystem gekauft werden zu erfassen und dadurch den Lagerbestandzu errechnen.
-	- Dafür wird für jedes Produkt die Menge gespeichert, welche gekauft wird pro Lieferung.
+    - Lieferungen ermöglichen es alle Produkte welche vom Getränktesystem gekauft werden zu erfassen und dadurch den Lagerbestandzu errechnen.
+    - Dafür wird für jedes Produkt die Menge gespeichert, welche gekauft wird pro Lieferung.
+
 ```mermaid
 classDiagram
     class Kunde {
@@ -835,7 +812,12 @@ classDiagram
         + String getBeschreibung()
         + String getKategorie()
     }
-    class Bestellung {
+
+```
+
+```mermaid
+	classDiagram
+	    class Bestellung {
         - static AtomicInteger counter
         - Kunde kunde
         - LocalDateTime timestamp
@@ -869,18 +851,20 @@ classDiagram
     }
 ```
 
-== Valueobjects
+### 6.2 Valueobjects
+
 Valueobjects haben bei uns oft den Zweck um einen Verlauf darzustellen. Diese sind möglichst kein um keine Daten redundant bei vielen Änderungen zu speichern.
+
 - Preis
-	- Ein Preis ist immer mit einem Objekt verbunden welches einen Preis haben kann. Dies ist in unserem Fall ein Produkt.
-	- Darin wird eine Referenz auf das Produkt gespeichert. Zusätzlich wird der Zeitpunkt zu welchem der Preis gesetzt wird gespeichert und wie hoch der Preis ist.
+    - Ein Preis ist immer mit einem Objekt verbunden welches einen Preis haben kann. Dies ist in unserem Fall ein Produkt.
+    - Darin wird eine Referenz auf das Produkt gespeichert. Zusätzlich wird der Zeitpunkt zu welchem der Preis gesetzt wird gespeichert und wie hoch der Preis ist.
 - Pfandwert
-	- Ein Pfandwert beschreibt beispielsweise eine Falsche oder einen Kasten, welcher mit Pfand abgerechnet wird.
-	- Dafür wird eine Beschreibung eine Zeitpunkt der Erstellung und die Höhe des Pfandes gespeichert.
-	- Obwohl der Pfand einen Preis hat, wird nicht ein Preis-Valueobject benutzt, da der Pfandwert sich normalerweise nicht ändert.
+    - Ein Pfandwert beschreibt beispielsweise eine Falsche oder einen Kasten, welcher mit Pfand abgerechnet wird.
+    - Dafür wird eine Beschreibung eine Zeitpunkt der Erstellung und die Höhe des Pfandes gespeichert.
+    - Obwohl der Pfand einen Preis hat, wird nicht ein Preis-Valueobject benutzt, da der Pfandwert sich normalerweise nicht ändert.
 - Bestellungsprodukt
-	- Ein Bestellungssprodukt beschreibt eine Bestellposition, d.h. ein Produkt und die zugehörige Menge.
-	- Dies ist als Valueobject implementiert, da man für eine Position nachvollziehen kann wie diese geändert wurde und eventuell Bedienfehler  oder fehlende Wahre gut und nachvollziehbar verbessert werden kann.
+    - Ein Bestellungssprodukt beschreibt eine Bestellposition, d.h. ein Produkt und die zugehörige Menge.
+    - Dies ist als Valueobject implementiert, da man für eine Position nachvollziehen kann wie diese geändert wurde und eventuell Bedienfehler oder fehlende Wahre gut und nachvollziehbar verbessert werden kann.
 
 ```mermaid
 classDiagram
@@ -918,20 +902,23 @@ classDiagram
         + int getMenge()
         + Preis getPreis()
     }
+
 ```
 
+### 6.3 Aggregates
 
-## Aggregates
 Aggregate werden als Zusammenfassung von Entities und Valueobjects genutzt, um an zusammenhängende Daten einfach heranzukommen.
+
 - CustomerDashboard
-	- Das CustomerDashboard fasst alle Daten zusammen welche sich auf einen Kunden beziehen und welche den Kunden Interessieren können.
-	- Diese Informationen bestehen aus dem Kunden Entity, alle Bestellungen des Kunden und alle Zahlungsvorgänge.
-	- Zusätzlich wird der gesammt gezahlte Betrag und der gesammte gekaufte Betrag vorberechnet. Daraus kann dann auch die noch geschuldete Summe berechnet werden.
+    - Das CustomerDashboard fasst alle Daten zusammen welche sich auf einen Kunden beziehen und welche den Kunden Interessieren können.
+    - Diese Informationen bestehen aus dem Kunden Entity, alle Bestellungen des Kunden und alle Zahlungsvorgänge.
+    - Zusätzlich wird der gesammt gezahlte Betrag und der gesammte gekaufte Betrag vorberechnet. Daraus kann dann auch die noch geschuldete Summe berechnet werden.
 - ProductInformation
-	- Die ProduktInformation beschreibt alle Informationen welche ein Produkt bestreffen.
-	- Gepspeichert werden: Eine Referenz auf das Produkt, die derzeitigen Pfandwerte des Produktes und der verlauf des Preises.
-	- Vorberechnet werden die Anzahl welche bestellt wurden und wie viele noch auf Vorrat sind.
-```mermaid
+    - Die ProduktInformation beschreibt alle Informationen welche ein Produkt bestreffen.
+    - Gepspeichert werden: Eine Referenz auf das Produkt, die derzeitigen Pfandwerte des Produktes und der verlauf des Preises.
+    - Vorberechnet werden die Anzahl welche bestellt wurden und wie viele noch auf Vorrat sind.
+
+```mermaid 
 classDiagram
 class CustomerDashboard {
 	- Kunde kunde
@@ -950,32 +937,8 @@ class ProductInformation {
         - int inStock
         + ProductInformation(Produkt produkt, GetraenkeUsecases gusecases)
     }
+
 ```
-
-
-- Preis
-    - Ein Preis ist immer mit einem Objekt verbunden welches einen Preis haben kann. Dies ist in unserem Fall ein Produkt.
-    - Darin wird eine Referenz auf das Produkt gespeichert. Zusätzlich wird der Zeitpunkt zu welchem der Preis gesetzt wird gespeichert und wie hoch der Preis ist.
-- Pfandwert
-    - Ein Pfandwert beschreibt beispielsweise eine Falsche oder einen Kasten, welcher mit Pfand abgerechnet wird.
-    - Dafür wird eine Beschreibung eine Zeitpunkt der Erstellung und die Höhe des Pfandes gespeichert.
-    - Obwohl der Pfand einen Preis hat, wird nicht ein Preis-Valueobject benutzt, da der Pfandwert sich normalerweise nicht ändert.
-- Bestellungsprodukt
-    - Ein Bestellungssprodukt beschreibt eine Bestellposition, d.h. ein Produkt und die zugehörige Menge.
-    - Dies ist als Valueobject implementiert, da man für eine Position nachvollziehen kann wie diese geändert wurde und eventuell Bedienfehler oder fehlende Wahre gut und nachvollziehbar verbessert werden kann.
-
-### 6.3 Aggregates
-
-Aggregate werden als Zusammenfassung von Entities und Valueobjects genutzt, um an zusammenhängende Daten einfach heranzukommen.
-
-- CustomerDashboard
-    - Das CustomerDashboard fasst alle Daten zusammen welche sich auf einen Kunden beziehen und welche den Kunden Interessieren können.
-    - Diese Informationen bestehen aus dem Kunden Entity, alle Bestellungen des Kunden und alle Zahlungsvorgänge.
-    - Zusätzlich wird der gesammt gezahlte Betrag und der gesammte gekaufte Betrag vorberechnet. Daraus kann dann auch die noch geschuldete Summe berechnet werden.
-- ProductInformation
-    - Die ProduktInformation beschreibt alle Informationen welche ein Produkt bestreffen.
-    - Gepspeichert werden: Eine Referenz auf das Produkt, die derzeitigen Pfandwerte des Produktes und der verlauf des Preises.
-    - Vorberechnet werden die Anzahl welche bestellt wurden und wie viele noch auf Vorrat sind.
 
 ### 6.4 Repositories
 
@@ -993,8 +956,7 @@ Das Getränkerepository umfasst die restlichen Daten:
 - Preise
 - Lieferungen
 - Bestellungen
-- Bestellpositionen
-Dieses Repository umfasst zusäzlich Methoden um diese Daten hinzuzufügen, auszulesen und vorallem schon nach filtervorgaben Auszulesen. Beispielsweise, dass nur ein User nach seiner Email gesucht werden kann.
+- Bestellpositionen Dieses Repository umfasst zusäzlich Methoden um diese Daten hinzuzufügen, auszulesen und vorallem schon nach filtervorgaben Auszulesen. Beispielsweise, dass nur ein User nach seiner Email gesucht werden kann.
 
 ```mermaid
 classDiagram
@@ -1026,6 +988,7 @@ class CustomerRepository {
         + Iterable~Zahlungsvorgang~ getZahlungsvorgaenge()
         + void addZahlungsVorgang(Zahlungsvorgang zahlungsvorgang)
     }
+
 ```
 
 ## 7. Unit Tests 
@@ -1063,27 +1026,25 @@ Um die Qualität und Korrektheit der Anwendung sicherzustellen, wurden für die 
 
 Die Coverage-Metrik gibt an, wie viel Prozent des Quellcodes durch Tests tatsächlich ausgeführt werden. Dabei gilt: Eine hohe Abdeckung allein garantiert keine Fehlerfreiheit, ist jedoch ein wichtiger Indikator für die Testtiefe und -qualität. Wichtig ist auch zu erwähnen das Tests nie beweisen können, das Software Fehlerfrei ist nur, dass ein Fehler vorliegt.
 
-Die Tests konzentrieren sich hauptsächlich auf die Anwendungsschicht (Layer `getraenkeapplication`). Diese enthält die Klassen:
+Die Tests konzentrieren sich hauptsächlich auf die Anwendungsschicht (Layer `getraenkeapplication`). Mit Fokus auf die Klassen:
 - `GetraenkeUsecases`
 - `KundenUsecases`
 
 Die Coverage-Berichte zeigen, dass diese Klassen zu einem großen Teil durch automatisierte Tests abgedeckt sind. Besonders häufig getestete Methoden sind:
 - `createKunde(...)`, `getKundenBalance(...)`
 - `addProdukt(...)`, `getStockAmountForProdukt(...)`, `setPriceForProdukt(...)`
-<img width="1246" alt="Screenshot 2025-06-03 at 10 27 33" src="https://github.com/user-attachments/assets/7e99b493-c985-482e-af95-f9c790c10069" />
-<img width="1246" alt="Screenshot 2025-06-03 at 10 27 47" src="https://github.com/user-attachments/assets/db02f494-54a0-44f1-ba0a-d56e5432ca79" />
-<img width="1246" alt="Screenshot 2025-06-03 at 10 27 57" src="https://github.com/user-attachments/assets/b3c144bf-31be-4b80-8070-8e8a871ce0fb" />
-
+![[Screenshot 2025-06-03 at 10.27.33.png]]
+![[Screenshot 2025-06-03 at 10.27.47.png]]
+![[Screenshot 2025-06-03 at 10.27.57.png]]
 
 ### 7.4 Fakes und Mocks
 
 ####  7.4.1 Mock-Objekt: `Repo`
 In dem Domain Layer der Applikation wird eine Mock-Klasse genutzt, welche die Funktionlität des Repositories simuliert. Diese Klasse implementiert das Interface, welches in der Applikationsschicht genutzt wird um eine DB. nachzubilden. Diese Mock-Klasse ist ungefähr eine Abbildung der Klasse aus der Applikationsschicht. Diese werden nicht zusammengefasst, da sie Semantisch etwas unterschiedliches bedeuten und getrennt voneinander benutzt werden.
 
-Die Mock-Klasse wird benötigt, um die Logik des Domain Layers zu testen, da darin eine Abhänigkeits zum Repository besteht. Diese Abhänigkeit ist notwendig aus, da der Preis eines Produktes und das Produkt jeweils einen verweis auf das jeweils andere Objekt haben. Dadurch entsteht ein 'Henne-Ei'-Problem, welches mit der Abhänigkeit zum Repository gelöst wird. Diese Abhänigkeit lässt das Produkt checken, ob ein Preis im Repository existiert und wenn dies nicht der Fall ist, wird ein neuer Preis erstellt, bzw. andersherum wird ein Fehler geworfen.
-Dieses Mock-Objekt ermöglicht es diese Logik ordentlich zu testen. Dies ist notwendig, da es eine zentrale Bedingung testet, welche für unser Datenmodell notwendig ist und potentiell bei falscher Bedienung der Anwendung zu Inkonsistenzen führen könnte. 
+Die Mock-Klasse wird benötigt, um die Logik des Domain Layers zu testen, da darin eine Abhänigkeits zum Repository besteht. Diese Abhänigkeit ist notwendig aus, da der Preis eines Produktes und das Produkt jeweils einen verweis auf das jeweils andere Objekt haben. Dadurch entsteht ein 'Henne-Ei'-Problem, welches mit der Abhänigkeit zum Repository gelöst wird. Diese Abhänigkeit lässt das Produkt checken, ob ein Preis im Repository existiert und wenn dies nicht der Fall ist, wird ein neuer Preis erstellt, bzw. andersherum wird ein Fehler geworfen. Dieses Mock-Objekt ermöglicht es diese Logik ordentlich zu testen. Dies ist notwendig, da es eine zentrale Bedingung testet, welche für unser Datenmodell notwendig ist und potentiell bei falscher Bedienung der Anwendung zu Inkonsistenzen führen könnte.
 
-```marmaid
+```mermaid
 classDiagram
     class GetraenkeRepositoryMock {
         - RepositoryData data
@@ -1117,6 +1078,7 @@ classDiagram
         + void addZahlungsVorgang(Zahlungsvorgang zahlungsvorgang)
     }
 ```
+
 #### 7.4.2 `KundenInputHandler`
 In den Tests des `KundenInputHandler` werden alle externen Abhängigkeiten durch **Mock-Objekte** ersetzt. Dies ermöglicht eine **isolierte Testbarkeit** der Benutzereingabe-Logik, ohne auf die reale Implementierung der Geschäftslogik oder auf tatsächliche Benutzereingaben angewiesen zu sein. Durch das mocken der der Abhänigkeiten ist der Test vollkommen isoliert von Benutzereingaben oder anderen Methoden. 
 
@@ -1208,6 +1170,9 @@ Getestet wird ausschließlich die **Verarbeitung der Eingaben und Steuerung des 
 
 ### 8.1 Code Smells
 #### 8.1.1 Large Class
+Before: `ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+After: `5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
+
 Code Beispiel ist die Klasse`ConsoleUtils` in der Adapterschicht. Auf dem Stand `Commit Stand: ec8012db4f8473d9cf1cad5178f139e92e3f416f`. Diese ist eindeutig zu lange und ist für mehrere Aufgaben zuständig. 
 
 ```java
@@ -1395,8 +1360,10 @@ class ConsolePrinter {
 ```
 Dies macht die einzelnen Klassen einfacher zu warten und spezifiziert die eigentliche Aufgabe, als alles in einem Überbegriff `Utils` zu vereinen. 
 
-#### 8.1.2 Duplicate Code 
 
+#### 8.1.2 Duplicate Code 
+Before: `ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+After: `5f3b9ef74a6e7ebcc939c045b32dbf242c376569`
 Am Beispiel des `EntityPicker` dieser vereint 3 Methoden die jeweils eine sehr ähnliche Aufgabe ausführen. 
 ```java
     public Optional<Produkt> pickOneProductFromAllProducts() {
@@ -1496,7 +1463,8 @@ public Optional<T> pickOneFromList(List<T> list, Function<T, String> labelFuncti
 ### 8.2 Refactorings
 
 ### 8.2.1 Replace Parameter with Builder
-
+Before: `ec8012db4f8473d9cf1cad5178f139e92e3f416f`
+After: `5b8c6a97f985ae77d85279b8d977d2ae98857c00`
 **Begründung:**  
 In der ursprünglichen Implementierung wurde bei der Erstellung eines Kundenobjekts direkt mit mehreren Parametern gearbeitet. Durch das Refactoring wurde der Builder Pattern eingeführt, um die Objekterstellung klarer zu strukturieren und zu kapseln. Das verbessert sowohl die Lesbarkeit als auch die Erweiterbarkeit, z. B. bei zusätzlichen Attributen.
 
@@ -1517,8 +1485,6 @@ Kunde kunde = new KundeBuilder()
 	
 kundeUseCases.createKunde(kunde);`
 ```
-
-**Commit:**  5b8c6a97f985ae77d85279b8d977d2ae98857c00
 
 **UML vorher:**
 
@@ -1551,12 +1517,11 @@ classDiagram
 ### 8.2.2 Extract Method
 
 **Begründung:**  
-In der Methode wie z.B. `addBestellung(Kunde, Iterable<Tiple<Produkt, Integer, Double>>)` war das Parsen der Triples zu Bestellungsprodukten direkt in der Methode implementiert. Durch das Refactoring wurde diese Logik in eine separate Methode `parseBestellungsProdukte` ausgelagert. Das verbessert die Lesbarkeit und Wiederverwendbarkeit des Codes, da die Logik nun klar getrennt ist und einfacher getestet werden kann.
+In der Methode wie z.B. `addBestellung(Kunde, Iterable<Tiple<Produkt, Integer, Double>>)` war das Parsen der Triples zu Bestellungsprodukten direkt in der Methode implementiert. Durch das Refactoring wurde diese Logik in eine separate Methode `parseBestellungsProdukte` ausgelagert. Das verbessert die Lesbarkeit und Wiederverwendbarkeit des Codes, da die Logik nun klar getrennt ist und einfacher getestet werden kann.
 
 **Code vorher:**
 
 ```java
-
 public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, Double>> produkte) throws Exception{
         ArrayList<BestellungProdukt> prodList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
@@ -1613,7 +1578,6 @@ public Bestellung addBestellung(Kunde kunde, Iterable<Triple<Produkt, Integer, D
 ```
 
 **UML nachher:**
-
 ```mermaid
 	classDiagram     
 	class GetraenkeUsecases{         
