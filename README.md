@@ -1,13 +1,56 @@
 # Programmentwurf
-```table-of-contents
-title: 
-style: nestedList # TOC style (nestedList|nestedOrderedList|inlineFirstLevel)
-minLevel: 0 # Include headings from the specified level
-maxLevel: 0 # Include headings up to the specified level
-includeLinks: true # Make headings clickable
-hideWhenEmpty: false # Hide TOC if no headings are found
-debugInConsole: false # Print debug info in Obsidian console
-```
+## Inhaltsverzeichnis
+- [1. Einführung](#1-einführung)
+  - [1.1 Starten der Applikation](#11-starten-der-applikation)
+  - [1.3 Ausführen der Tests](#13-ausführen-der-tests)
+- [2. Clean Architecture](#2-clean-architecture)
+  - [2.1 Was ist Clean Architecture](#21-was-ist-clean-architecture)
+  - [2.2 Analyse der Schichten](#22-analyse-der-schichten)
+    - [2.2.1 Domänenschicht](#221-domänenschicht)
+    - [2.2.2 Anwendungsschicht](#222-anwendungsschicht)
+    - [2.2.3 Adapterschicht](#223-adapterschicht)
+  - [2.3 Analyse der Dependency Rule](#23-analyse-der-dependency-rule)
+    - [2.3.1 Positiv Beispiel : `GetraenkeUsecases`](#231-positiv-beispiel--getraenkeusecases)
+    - [2.3.2 Negativ Beispiel : `KundenUsecases`](#232-negativ-beispiel--kundenusecases)
+- [3. SOLID](#3-solid)
+  - [3.1 Open/Closed Principle (OCP)](#31-openclosed-principle-ocp)
+    - [3.1.1 Positives Beispiel `ConsoleAdapter`](#311-positives-beispiel-consoleadapter)
+    - [3.1.2 Negatives Beispiel `ConsoleError`](#312-negatives-beispiel-consoleerror)
+  - [3.2 Interface Segregation Principle (ISP)](#32-interface-segregation-principle-isp)
+    - [3.2.1 Positives Beispiel `KundenInputHandler`](#321-positives-beispiel-kundeninputhandler)
+    - [3.1.2 Negatives Beispiel `GetraenkeUsecases`](#312-negatives-beispiel-getraenkeusecases)
+  - [3.3 Single Responsibility Principle (SRP)](#33-single-responsibility-principle-srp)
+    - [3.3.1 Positives Beispiel `Tripel`](#331-positives-beispiel-tripel)
+    - [3.3.2 Negatives Beispiel `GetraenkeRepositoryImpl`](#332-negatives-beispiel-getraenkerepositoryimpl)
+- [4. Weiter Prinzipien](#4-weiter-prinzipien)
+  - [4.1 GRASP: Geringe Kopplung](#41-grasp-geringe-kopplung)
+    - [4.1.1 Positives Beispiel: `Preis`](#411-positives-beispiel-preis)
+    - [4.1.2 Negativ Beispiel `Product`](#412-negativ-beispiel-product)
+  - [4.2 GRASP: High Cohesion](#42-grasp-high-cohesion)
+  - [4.3 Dont Repeat Yourself (DRY)](#43-dont-repeat-yourself-dry)
+- [5. Design Pattern](#5-design-pattern)
+  - [5.1 Builder Pattern](#51-builder-pattern)
+  - [5.2 Strategy Pattern](#52-strategy-pattern)
+- [6. Domain Driven Design (DDD)](#6-domain-driven-design-ddd)
+  - [6.1 Entities](#61-entities)
+  - [6.2 Valueobjects](#62-valueobjects)
+  - [6.3 Aggregates](#63-aggregates)
+  - [6.4 Repositories](#64-repositories)
+- [7. Unit Tests](#7-unit-tests)
+  - [7.1 Zehn Unit Tests - Tabelle](#71-zehn-unit-tests---tabelle)
+  - [7.2 ATRIP](#72-atrip)
+  - [7.3 Code Coverage](#73-code-coverage)
+  - [7.4 Fakes und Mocks](#74-fakes-und-mocks)
+    - [7.4.1 Mock-Objekt: `Repo`](#741-mock-objekt-repo)
+    - [7.4.2 `KundenInputHandler`](#742-kundeninputhandler)
+- [8. Refactoring](#8-refactoring)
+  - [8.1 Code Smells](#81-code-smells)
+    - [8.1.1 Large Class](#811-large-class)
+    - [8.1.2 Duplicate Code](#812-duplicate-code)
+  - [8.2 Refactorings](#82-refactorings)
+    - [8.2.1 Replace Parameter with Builder](#821-replace-parameter-with-builder)
+    - [8.2.2 Extract Method](#822-extract-method)
+
 ## 1. Einführung
 
 Die Applikation ASE_Getraenke (Adavanced Software Engeniering) ist eine Command Line Interface (CLI), welches zu Unterstützung und Verwaltung der Gertränke des Wohnheims genutzt werden kann. Die Domäin ist, deswegen auch an die Prozesse des Wohnheimes angepasst und funktioniert, deswegen in diesem am reibungslosesten.
