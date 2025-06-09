@@ -123,7 +123,7 @@ Der Nutzer kann nun die präsentierten Funktionen aufrufen und wird durch den Pr
 ### 1.3 Ausführen der Tests
 Die Tests werden über den Maven-Lifecycle automatischen bei dem Befehl ```mvn clean install```  mit ausgeführt.  Die Anwendung ermöglicht auch das konkrette Ausführen der Tests.
 ```sh 
-cd asegetraenke
+cd x-getraenke
 mvn test
 ```
 
