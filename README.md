@@ -78,7 +78,7 @@ Die Software soll die Getränke Verwaltung des Wohnheims digitalisieren und es f
 1. **Repository klonen**
 ```sh 
 git clone https://github.com/Gamagu/ase_getraenke.git
-cd asegetraenke
+cd x-getraenke
 ```
 
 2. Projekt Installieren und bauen 
@@ -89,7 +89,7 @@ Nachdem ```mvn clean install``` kann um den um den Build-Prozess zu verkürzen `
 
  3. Starten der Anwendung 
 ```sh 
-cd getraenkeadapter
+cd 1-getraenke-adapters
 mvn exec:java
 ```
 
