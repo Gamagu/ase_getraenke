@@ -158,9 +158,9 @@ Die Adapterschicht dient als Verbindung zwischen der Geschäftslogik und den äu
 Das Projekt ist in der Struktur so aufgebaut, dass es nicht möglich ist gegen die Regel der Dependency Rule zu verstoßen. Im Folgenden werden, deswegen keine Negativ Beispiele gezeigt bei denen diese Regel missachtet wird. 
 
 ```shell
-├── 0-getraenkeadapter
-├── 1-getraenkeapplication
-├── 2-getraenkedomain
+├── 1-getraenke-adapters
+├── 2-getraenke-application
+├── 3-getraenke-domain
 ├── README.md
 └── pom.xml
 ```
